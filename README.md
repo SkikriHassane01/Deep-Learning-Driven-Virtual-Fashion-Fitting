@@ -38,3 +38,15 @@ we need two type of datasets, ***Clothing Dataset*** and ***Pose and Segmentatio
     - Use **OpenPose** or **MediaPipe** To detect where body parts are (head, shoulders, elbows, etc.) using an image.
 
     - Use **semantic segmentation** (e.g., DeepLab) To separate the body parts (e.g., upper body, arms, legs) from the background and from each other in the image.
+
+### Step3: Generative AI Model (Text to image)
+
+- **Choose a Base Model**: Start with a powerful pre-trained image generation model like **Stable Diffusion** (a model that creates images from text).
+
+- **Customize It for Fashion (Using DreamBooth)**: Use DreamBooth to fine-tune the model with a fashion-specific dataset (like Fashion-Gen), so it learns to generate clothing images.
+
+- **Train the Model** to Do This:
+
+    - Understand clothing descriptions (like "red leather jacket" or "floral summer dress").
+
+    - Create high-quality clothing images in different styles, materials, and types (e.g., shirts, jeans, jackets, skirts).
