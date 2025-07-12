@@ -20,9 +20,15 @@ The project divided into 7 main sections:
 we need two type of datasets, ***Clothing Dataset*** and ***Pose and Segmentation Dataset***
 
 - **Clothing Dataset** large dataset of clothing image and descriptions
-    - **DeepFashion Dataset** diverse categories of fashion images with annotations.
-    - **Fashion-Gen Dataset** consists of text-image pairs from fashion domain
-
+    - [**DeepFashion Dataset**](https://drive.google.com/drive/folders/0B7EVK8r0v71pQ2FuZ0k0QnhBQnc?resourcekey=0-NWldFxSChFuCpK4nzAIGsg)  Contains 800,000+ fashion images with detailed attributes, bounding boxes, and landmarks.
+    - [**Fashion-Gen Dataset**](https://www.kaggle.com/datasets/bothin/fashiongen-validation) Text-to-image dataset with fashion images and their associated product descriptions.
+        - ***How to Load .h5 Files*** 
+        ```python
+        import h5py
+        with h5py.File("fashiongen_256_256_train.h5", "r") as f:
+        images = f['input_image'][:]          # shape: (n_samples, 256,256,3)
+        captions = f['input_description'][:]  # list of textual descriptions
+        ```
 - **Pose and Segmentation Dataset** datasets for human body pose detection and segmentation to recognize body parts
     - **COCO dataset** large scale dataset for object detection, segmentation and pose estimation 
     - **LIP dataset** dataset for human parsing, containing annotated images for pixel-wise human segmentation.
@@ -87,3 +93,15 @@ we need two type of datasets, ***Clothing Dataset*** and ***Pose and Segmentatio
 - View the virtual try-on result.
 
 **Backend Deployment:** Host the trained models using cloud services (e.g., ***AWS or Hugging Face Spaces***) to generate clothing images in real-time.
+
+## Tools and Technologies:
+
+- **Frameworks:** PyTorch, TensorFlow, Hugging Face diffusers, OpenCV, MediaPipe
+
+- **Libraries:** `Stable Diffusion`, `DreamBooth`, `OpenPose`, `DeepLab`, `segmentation_models_pytorch`
+
+- **Cloud Platforms:** AWS Sagemaker, Hugging Face Spaces
+
+- **Frontend:** HTML, CSS, JavaScript, React (for web app)
+
+- **Backend:** Flask/Django (to integrate with the model API)
