@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+
+## we don't whant git to track our data
+Data/DeepFashion
+Data/Fashion-gen
+
 # Distribution / packaging
 .Python
 build/
@@ -205,3 +210,4 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+poetry.lock
