@@ -1,7 +1,12 @@
+"""
+Readers for DeepFashion and Fashion-gen annotations
+"""
+
 #________________TODO: Imports_____________________________________________________________
 import pandas as pd
 from pathlib import Path
 import preprocessing.config as C
+import os 
 
 #_______________TODO:Load the Deep Fashion Dataset annotation_____________________________
 def load_deepFashion()->pd.DataFrame:
@@ -68,7 +73,14 @@ def load_deepFashion()->pd.DataFrame:
 #______________TODO: Load the Fashion-Gen dataset style____________________________________
 
 def load_fashion_ges() -> pd.DataFrame:
-    styles = pd.read_csv(C.STYLES_GEN_DIR, on_bad_lines='warn', engine="python")
+    file_path = C.STYLES_GEN_DIR
+    try:
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File {file_path} not exist")
+        styles = pd.read_csv(file_path, on_bad_lines='warn', engine="python")
+    except Exception as e:
+        print(f"Error loading the {file_path}, with this error: {str(e)}")
+
     
     styles = styles.rename(columns={"id":"file", "subCategory" : "category"})
     
