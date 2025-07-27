@@ -212,3 +212,4 @@ marimo/_lsp/
 __marimo__/
 poetry.lock
 Pose/Simples/img_00000001_pose.jpg
+.vscode/settings.json
