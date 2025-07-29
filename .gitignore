@@ -9,7 +9,7 @@ __pycache__/
 
 ## we don't whant git to track our data
 Data/DeepFashion
-Data/Fashion-gen
+Data/FashionGen
 
 # Distribution / packaging
 .Python
@@ -30,7 +30,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
+Dataset_Clean
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -213,3 +213,5 @@ __marimo__/
 poetry.lock
 Pose/Simples/img_00000001_pose.jpg
 .vscode/settings.json
+Data/FashionGen/
+Pose

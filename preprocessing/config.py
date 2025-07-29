@@ -16,9 +16,9 @@ import torch
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "Data"
 DEEP_FASHION_DIR = DATA_DIR / "DeepFashion" / "Images"
-FASHION_GEN_DIR = DATA_DIR / "Fashion-gen" / "images"
+FASHION_GEN_DIR = DATA_DIR / "FashionGen" / "images"
 ANNOTATIONS_DIR = DATA_DIR / "DeepFashion" / "annotations"
-STYLES_GEN_DIR = DATA_DIR / "Fashion-gen" / "styles.csv"
+STYLES_GEN_DIR = DATA_DIR / "FashionGen" / "styles.csv"
 
 CLEAN_DIR = ROOT_DIR / "Dataset_Clean"
 POSE_DIR  = ROOT_DIR / "Pose"
