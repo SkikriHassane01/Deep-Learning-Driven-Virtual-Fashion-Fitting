@@ -1,5 +1,5 @@
 """
-Readers for DeepFashion and Fashion-gen annotations
+Readers for DeepFashion and FashionGen annotations
 """
 
 #________________TODO: Imports_____________________________________________________________
@@ -70,9 +70,14 @@ def load_deepFashion()->pd.DataFrame:
     df = df.merge(split, on="file", how="left")
     
     df = df.rename(columns={"category_name": "category"})
+    
+    path = C.CLEAN_DIR / "DeepFashion" / "annotation" / "DeepFashion.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(path, index=False)
+    
     return df
 
-#______________TODO: Load the Fashion-Gen dataset style____________________________________
+#______________TODO: Load the FashionGen dataset style____________________________________
 
 def load_fashion_ges() -> pd.DataFrame:
     file_path = C.STYLES_GEN_DIR
@@ -92,4 +97,11 @@ def load_fashion_ges() -> pd.DataFrame:
     styles.groupby("category").cumcount()
     .apply(lambda i : "train" if i%10 <8 else ("val" if i%10 == 8 else "test"))
     )
+    path = C.CLEAN_DIR / "FashionGen" / "annotation" / "FashionGen.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    styles.to_csv(path, index=False)
     return styles
+
+if __name__ == "__main__":
+    # load_deepFashion()
+    load_fashion_ges()
