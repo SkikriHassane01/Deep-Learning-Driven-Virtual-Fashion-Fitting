@@ -18,14 +18,8 @@ Data/
 │   └── FashionGen/
 │       ├── Images/           # Cleaned & resized
 │       └── annotation/
-│           └── FashionGen.csv
 ├── Pose/
 │   ├── DeepFashion/          # JSON keypoints
 │   └── FashionGen/           # JSON keypoints
 └── preprocessing/
-    ├── data_cleaning.py
-    ├── data_labeling.py
-    ├── data_augmentation.py
-    ├── augment_and_update_annotation.py
-    └── config.py
 ```
