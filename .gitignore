@@ -1,3 +1,9 @@
+## add the data folder to not track it 
+data
+
+# add the media folder for Django application 
+media
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
