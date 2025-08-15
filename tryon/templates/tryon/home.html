@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Virtual Try-On • Upload</title>
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'tryon/css/styles.css' %}">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Virtual Try-On</h1>
+      <p>Upload your photo and describe the clothing you want to try on</p>
+    </div>
+    
+    <div class="content">
+      <div class="upload-card">
+        <form action="{% url 'submit' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <div class="form-group">
+            <label for="id_user_image">📸 Upload your photo:</label>
+            {{ form.user_image }}
+            <div class="image-preview" id="imagePreview">
+              <img id="previewImg" src="" alt="Preview">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="id_prompt">👕 Describe the clothing:</label>
+            {{ form.prompt }}
+          </div>
+          
+          <button type="submit" class="submit-btn">✨ Generate Try-On</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('id_user_image').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      const preview = document.getElementById('imagePreview');
+      const previewImg = document.getElementById('previewImg');
+      
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          previewImg.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

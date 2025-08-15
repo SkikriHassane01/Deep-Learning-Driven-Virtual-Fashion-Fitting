@@ -1,0 +1,215 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    color: #e0e0e0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #2d2d44;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    border: 1px solid #3a3a5c;
+}
+
+.header {
+    background: linear-gradient(135deg, #4a5568, #2d3748);
+    padding: 2rem;
+    text-align: center;
+    color: #f7fafc;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.content {
+    padding: 2rem;
+}
+
+.upload-card {
+    background: #3a3a5c;
+    border: 2px dashed #4a5568;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+}
+
+.upload-card:hover {
+    border-color: #6366f1;
+    background: #404063;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #cbd5e0;
+    font-size: 1.1rem;
+}
+
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #4a5568;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    background: #2d3748;
+    color: #f7fafc;
+}
+
+.form-group input[type="text"]:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #4a5568;
+    border-radius: 10px;
+    background: #2d3748;
+    cursor: pointer;
+    color: #cbd5e0;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+    background: linear-gradient(135deg, #7c3aed, #6366f1);
+}
+
+.result-section {
+    margin-bottom: 2rem;
+}
+
+.result-section h2 {
+    color: #f7fafc;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.prompt-display {
+    background: #2d3748;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #6366f1;
+}
+
+.prompt-display strong {
+    color: #a78bfa;
+}
+
+.image-container {
+    margin-bottom: 2rem;
+}
+
+.image-container img {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    display: block;
+    margin: 0 auto;
+}
+
+.processing-message {
+    background: #2d3748;
+    border: 1px solid #4a5568;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    color: #cbd5e0;
+    font-style: italic;
+}
+
+.back-link {
+    display: inline-block;
+    background: #4a5568;
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.back-link:hover {
+    background: #2d3748;
+    transform: translateY(-2px);
+}
+
+.image-preview {
+    margin-top: 1rem;
+    display: none;
+}
+
+.image-preview img {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: block;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 1rem 0.5rem;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .content {
+        padding: 1.5rem;
+    }
+    
+    .upload-card {
+        padding: 1.5rem;
+    }
+}

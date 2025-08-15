@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Virtual Try-On • Result</title>
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'tryon/css/styles.css' %}">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Try-On Result</h1>
+      <p>Your virtual fashion transformation</p>
+    </div>
+    
+    <div class="content">
+      <div class="prompt-display">
+        <strong>✨ Your Request:</strong> {{ item.prompt }}
+      </div>
+      
+      <div class="result-section">
+        <h2>📸 Your Original Photo</h2>
+        <div class="image-container">
+          <img src="{{ item.user_image.url }}" alt="Your uploaded photo"/>
+        </div>
+      </div>
+
+      {% if item.result_image %}
+        <div class="result-section">
+          <h2>🎨 Try-On Result</h2>
+          <div class="image-container">
+            <img src="{{ item.result_image.url }}" alt="Virtual try-on result"/>
+          </div>
+        </div>
+      {% else %}
+        <div class="processing-message">
+          <p>🔄 <em>Processing your try-on... The AI is working its magic to generate your result!</em></p>
+        </div>
+      {% endif %}
+
+      <div style="text-align: center;">
+        <a href="{% url 'home' %}" class="back-link">← Try Another Look</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
