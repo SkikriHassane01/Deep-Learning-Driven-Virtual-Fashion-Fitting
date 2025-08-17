@@ -5,7 +5,7 @@ class TryOnRequest(models.Model):
     cloth_image = models.ImageField(upload_to='uploads/cloth/', null=True, blank=True) 
     cloth_mask  = models.ImageField(upload_to='uploads/cloth_mask/', null=True, blank=True)
     
-    prompt = models.CharField(max_length=255)
+    prompt = models.CharField(max_length=255, blank=True, null=True)  # Make optional
 
     generate_from_prompt = models.BooleanField(default=False)
 
@@ -19,4 +19,7 @@ class TryOnRequest(models.Model):
     result_image = models.ImageField(upload_to='outputs/', null=True, blank=True)
 
     def __str__(self):
-        return f"TryOnRequest #{self.id} - {self.prompt[:30]}"
+        if self.prompt:
+            return f"TryOnRequest #{self.id} - {self.prompt[:30]}"
+        else:
+            return f"TryOnRequest #{self.id} - Cloth Upload"

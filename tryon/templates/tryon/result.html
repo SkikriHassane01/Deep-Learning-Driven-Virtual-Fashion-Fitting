@@ -15,9 +15,6 @@
     </div>
     
     <div class="content">
-      <div class="prompt-display">
-        <strong>✨ Your Request:</strong> {{ item.prompt }}
-      </div>
       
       <div class="result-section">
         <h2>📸 Your Original Photo</h2>
@@ -26,20 +23,53 @@
         </div>
       </div>
 
+      {% if item.generate_from_prompt %}
+        <div class="prompt-display">
+          <strong>✨ Generated from text:</strong> "{{ item.prompt }}"
+          <p><em>Our AI used Stable Diffusion to create clothing from your description</em></p>
+        </div>
+      {% else %}
+        <div class="result-section">
+          <h2>👕 Your Selected Clothing</h2>
+          <div class="image-container">
+            <img src="{{ item.cloth_image.url }}" alt="Selected clothing item"/>
+          </div>
+          <p><em>Our AI used advanced computer vision to fit this clothing to your body</em></p>
+        </div>
+      {% endif %}
+
       {% if item.result_image %}
         <div class="result-section">
-          <h2>🎨 Try-On Result</h2>
+          <h2>🎨 Virtual Try-On Result</h2>
           <div class="image-container">
             <img src="{{ item.result_image.url }}" alt="Virtual try-on result"/>
+          </div>
+          <div class="method-info">
+            {% if item.generate_from_prompt %}
+              <p><strong>Method:</strong> Text-to-Cloth Generation + Virtual Fitting</p>
+              <p>1. Generated clothing from: "{{ item.prompt }}"</p>
+              <p>2. Applied pose estimation and body segmentation</p>
+              <p>3. Fitted the generated clothing to your body shape</p>
+            {% else %}
+              <p><strong>Method:</strong> Image-based Virtual Try-On</p>
+              <p>1. Analyzed your uploaded clothing image</p>
+              <p>2. Applied pose estimation and body segmentation</p>
+              <p>3. Warped and fitted the clothing to your body shape</p>
+            {% endif %}
           </div>
         </div>
       {% else %}
         <div class="processing-message">
-          <p>🔄 <em>Processing your try-on... The AI is working its magic to generate your result!</em></p>
+          <p>🔄 <em>Processing your try-on... The AI is working its magic!</em></p>
+          <script>
+            setTimeout(function() {
+              window.location.reload();
+            }, 5000);
+          </script>
         </div>
       {% endif %}
 
-      <div style="text-align: center;">
+      <div style="text-align: center; margin-top: 30px;">
         <a href="{% url 'home' %}" class="back-link">← Try Another Look</a>
       </div>
     </div>

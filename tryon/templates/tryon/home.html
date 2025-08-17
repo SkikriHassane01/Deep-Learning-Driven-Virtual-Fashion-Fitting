@@ -22,41 +22,48 @@
                     <label>Your photo:</label>
                     <div class="upload-card">
                         {{ form.user_image }}
+                        {% if form.user_image.errors %}
+                            <div class="error-message">{{ form.user_image.errors }}</div>
+                        {% endif %}
                         <div class="image-preview" id="user-preview">
                             <img src="" alt="User preview" />
                         </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Describe the clothing (text):</label>
-                    {{ form.prompt }}
+                <div class="mode-selection">
+                    <h3>Choose your try-on method:</h3>
+                    <div class="radio-options">
+                        {% for value, text in form.mode.field.choices %}
+                            <label class="radio-label">
+                                <input type="radio" name="mode" value="{{ value }}" 
+                                       {% if value == 'cloth' %}checked{% endif %}>
+                                <span>{{ text }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 10px;">
-                        {{ form.generate_from_prompt }}
-                        <strong>Generate cloth from text</strong>
-                    </label>
-                </div>
-
-                <div id="upload-block">
+                <div id="prompt-block" class="option-block">
                     <div class="form-group">
-                        <label>Or upload a cloth image:</label>
+                        <label>Describe the clothing (text):</label>
+                        <input type="text" name="prompt" id="id_prompt" placeholder="e.g. red floral dress with floral patterns" />
+                        {% if form.prompt.errors %}
+                            <div class="error-message">{{ form.prompt.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div id="upload-block" class="option-block">
+                    <div class="form-group">
+                        <label>Upload a cloth image:</label>
                         <div class="upload-card">
                             {{ form.cloth_image }}
+                            {% if form.cloth_image.errors %}
+                                <div class="error-message">{{ form.cloth_image.errors }}</div>
+                            {% endif %}
                             <div class="image-preview" id="cloth-preview">
                                 <img src="" alt="Cloth preview" />
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><small>(Optional) Cloth mask (PNG; white=cloth, black=bg):</small></label>
-                        <div class="upload-card">
-                            {{ form.cloth_mask }}
-                            <div class="image-preview" id="mask-preview">
-                                <img src="" alt="Mask preview" />
                             </div>
                         </div>
                     </div>
@@ -68,15 +75,52 @@
     </div>
 
     <script>
-        // Toggle functionality
-        const chk = document.querySelector('input[name="generate_from_prompt"]');
-        const block = document.getElementById('upload-block');
-        function toggle() { 
-            block.style.opacity = chk.checked ? 0.5 : 1; 
-            block.style.pointerEvents = chk.checked ? 'none' : 'auto';
+        // Toggle functionality between prompt and cloth upload
+        const radioButtons = document.querySelectorAll('input[name="mode"]');
+        const promptBlock = document.getElementById('prompt-block');
+        const uploadBlock = document.getElementById('upload-block');
+        const promptInput = document.getElementById('id_prompt');
+        const clothInput = document.querySelector('input[name="cloth_image"]');
+        
+        function toggleMode() {
+            const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+            
+            if (selectedMode === 'prompt') {
+                // Show prompt block, hide upload block
+                promptBlock.style.display = 'block';
+                promptBlock.style.opacity = 1;
+                promptBlock.style.pointerEvents = 'auto';
+                
+                uploadBlock.style.opacity = 0.5;
+                uploadBlock.style.pointerEvents = 'none';
+                
+                // Make prompt required, cloth not required
+                promptInput.required = true;
+                clothInput.required = false;
+            } else {
+                // Show upload block, hide prompt block
+                uploadBlock.style.display = 'block';
+                uploadBlock.style.opacity = 1;
+                uploadBlock.style.pointerEvents = 'auto';
+                
+                promptBlock.style.opacity = 0.5;
+                promptBlock.style.pointerEvents = 'none';
+                
+                // Make cloth required, prompt not required
+                promptInput.required = false;
+                clothInput.required = true;
+            }
         }
-        chk.addEventListener('change', toggle); 
-        toggle();
+        
+        // Add event listeners to radio buttons
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', toggleMode);
+        });
+        
+        // Call toggle on page load to set initial state
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleMode();
+        });
 
         // Image preview functionality
         function setupImagePreview(inputId, previewId) {
@@ -104,7 +148,7 @@
         // Setup previews for all file inputs
         setupImagePreview('user_image', 'user-preview');
         setupImagePreview('cloth_image', 'cloth-preview');
-        setupImagePreview('cloth_mask', 'mask-preview');
     </script>
 </body>
+</html>
 </html>

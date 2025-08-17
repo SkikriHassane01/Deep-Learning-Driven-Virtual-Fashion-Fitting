@@ -1,8 +1,8 @@
-kagglehub
-Django
-Pillow
-diffusers==0.30.0
-transformers==4.42.4
-accelerate==0.33.0
-safetensors==0.4.3
-torch>=2.2.0
+torch>=1.9.0
+torchvision>=0.10.0
+opencv-python>=4.5.0
+Pillow>=8.0.0
+tqdm>=4.60.0
+scikit-image>=0.18.0
+numpy>=1.21.0
+pathlib
