@@ -1,17 +1,29 @@
 import os
 from pathlib import Path
 import json
+import time
+from collections import defaultdict
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
+from torch.cuda.amp import autocast, GradScaler
+from torch.utils.data.sampler import WeightedRandomSampler
+import torch.optim as optim
 
 import torchvision.transforms as transforms
 from PIL import Image
 import numpy as np
 import cv2
 from tqdm import tqdm
+
+# Import for profiling
+try:
+    from torch.profiler import profile, record_function, ProfilerActivity
+    PROFILER_AVAILABLE = True
+except ImportError:
+    PROFILER_AVAILABLE = False
 
 
 # -------------------------
@@ -109,11 +121,14 @@ class VirtualTryOnDataset(Dataset):
       data/train_pairs.txt (person.jpg cloth.jpg)
       data/test_pairs.txt
     """
-    def __init__(self, data_dir, pairs_file, transform=None, pose_transform=None, split='train'):
+    def __init__(self, data_dir, pairs_file, transform=None, pose_transform=None, 
+                 split='train', cache_images=False):
         self.data_dir = Path(data_dir)
         self.split = split  # "train" or "test"
         self.transform = transform
         self.pose_transform = pose_transform
+        self.cache_images = cache_images
+        self.cached_data = {}
 
         pairs_path = self.data_dir / pairs_file
         self.pairs = []
@@ -130,6 +145,49 @@ class VirtualTryOnDataset(Dataset):
         self.cloth_dir  = self.split_dir / "cloth"
         self.mask_dir   = self.split_dir / "cloth-mask"
         self.pose_dir   = self.split_dir / "openpose_json"
+        
+        # Pre-cache all the files if requested
+        if self.cache_images:
+            print(f"Caching {len(self.pairs)} {split} images in memory...")
+            for idx in tqdm(range(len(self.pairs))):
+                self._cache_item(idx)
+
+    def _cache_item(self, idx):
+        """Pre-load and cache an item"""
+        if idx in self.cached_data:
+            return
+            
+        person_name, cloth_name = self.pairs[idx]
+
+        # paths
+        person_path = self.person_dir / person_name
+        cloth_path  = self.cloth_dir / cloth_name
+        mask_path   = self._find_mask(self.mask_dir, cloth_name)
+        pose_json = self.pose_dir / (Path(person_name).stem + "_keypoints.json")
+
+        # load images (RGB)
+        try:
+            person_img = Image.open(person_path).convert("RGB")
+            cloth_img  = Image.open(cloth_path).convert("RGB")
+
+            # cloth mask (L)
+            if mask_path and mask_path.exists():
+                cloth_mask = Image.open(mask_path).convert("L")
+            else:
+                cloth_mask = Image.new("L", cloth_img.size, 255)
+
+            # pose map (L)
+            pose_map = (
+                self._load_pose_map(pose_json, size_hw=(person_img.size[1], person_img.size[0]))
+                if pose_json.exists() else Image.new("L", person_img.size, 0)
+            )
+
+            # body mask (placeholder = all 1s)
+            body_mask = Image.new("L", person_img.size, 255)
+            
+            self.cached_data[idx] = (person_img, cloth_img, cloth_mask, pose_map, body_mask)
+        except Exception as e:
+            print(f"Warning: Failed to cache item {idx}: {e}")
 
     def __len__(self):
         return len(self.pairs)
@@ -190,38 +248,42 @@ class VirtualTryOnDataset(Dataset):
         return Image.fromarray(pose_map, mode="L")
 
     def __getitem__(self, idx):
-        person_name, cloth_name = self.pairs[idx]
-
-        # paths
-        person_path = self.person_dir / person_name
-        cloth_path  = self.cloth_dir / cloth_name
-        mask_path   = self._find_mask(self.mask_dir, cloth_name)
-
-        pose_json = self.pose_dir / (Path(person_name).stem + "_keypoints.json")
-
-        # load images (RGB)
-        if not person_path.exists():
-            raise FileNotFoundError(f"Person not found: {person_path}")
-        if not cloth_path.exists():
-            raise FileNotFoundError(f"Cloth not found: {cloth_path}")
-
-        person_img = Image.open(person_path).convert("RGB")
-        cloth_img  = Image.open(cloth_path).convert("RGB")
-
-        # cloth mask (L)
-        if mask_path and mask_path.exists():
-            cloth_mask = Image.open(mask_path).convert("L")
+        if self.cache_images and idx in self.cached_data:
+            # Use cached data
+            person_img, cloth_img, cloth_mask, pose_map, body_mask = self.cached_data[idx]
         else:
-            cloth_mask = Image.new("L", cloth_img.size, 255)
+            # Load from disk
+            person_name, cloth_name = self.pairs[idx]
 
-        # pose map (L)
-        pose_map = (
-            self._load_pose_map(pose_json, size_hw=(person_img.size[1], person_img.size[0]))
-            if pose_json.exists() else Image.new("L", person_img.size, 0)
-        )
+            # paths
+            person_path = self.person_dir / person_name
+            cloth_path  = self.cloth_dir / cloth_name
+            mask_path   = self._find_mask(self.mask_dir, cloth_name)
+            pose_json = self.pose_dir / (Path(person_name).stem + "_keypoints.json")
 
-        # body mask (placeholder = all 1s)
-        body_mask = Image.new("L", person_img.size, 255)
+            # load images (RGB)
+            if not person_path.exists():
+                raise FileNotFoundError(f"Person not found: {person_path}")
+            if not cloth_path.exists():
+                raise FileNotFoundError(f"Cloth not found: {cloth_path}")
+
+            person_img = Image.open(person_path).convert("RGB")
+            cloth_img  = Image.open(cloth_path).convert("RGB")
+
+            # cloth mask (L)
+            if mask_path and mask_path.exists():
+                cloth_mask = Image.open(mask_path).convert("L")
+            else:
+                cloth_mask = Image.new("L", cloth_img.size, 255)
+
+            # pose map (L)
+            pose_map = (
+                self._load_pose_map(pose_json, size_hw=(person_img.size[1], person_img.size[0]))
+                if pose_json.exists() else Image.new("L", person_img.size, 0)
+            )
+
+            # body mask (placeholder = all 1s)
+            body_mask = Image.new("L", person_img.size, 255)
 
         # transforms (resize to 512x512)
         if self.transform is not None:
@@ -238,107 +300,225 @@ class VirtualTryOnDataset(Dataset):
         return inp, target
 
 
-# -------------------------
-#   Training
-# -------------------------
-def train_model(data_dir, output_dir, epochs=50, batch_size=4, lr=2e-4):
+# Custom learning rate scheduler with warmup
+class WarmupCosineScheduler:
+    def __init__(self, optimizer, warmup_epochs, max_epochs, eta_min=0):
+        self.optimizer = optimizer
+        self.warmup_epochs = warmup_epochs
+        self.max_epochs = max_epochs
+        self.eta_min = eta_min
+        self.base_lrs = [group['lr'] for group in optimizer.param_groups]
+        self.last_lr = self.base_lrs.copy()
+        
+    def step(self, epoch):
+        if epoch < self.warmup_epochs:
+            # Linear warmup
+            lr_scale = epoch / max(1, self.warmup_epochs)
+            for i, param_group in enumerate(self.optimizer.param_groups):
+                param_group['lr'] = self.base_lrs[i] * lr_scale
+                self.last_lr[i] = param_group['lr']
+        else:
+            # Cosine annealing
+            progress = (epoch - self.warmup_epochs) / (self.max_epochs - self.warmup_epochs)
+            cosine_factor = 0.5 * (1 + np.cos(np.pi * progress))
+            for i, param_group in enumerate(self.optimizer.param_groups):
+                param_group['lr'] = self.eta_min + (self.base_lrs[i] - self.eta_min) * cosine_factor
+                self.last_lr[i] = param_group['lr']
+    
+    def get_last_lr(self):
+        return self.last_lr
+
+
+def train_model(data_dir, output_dir, epochs=50, batch_size=4, lr=0.0002, resume_checkpoint=None,
+               num_workers=4, cache_data=False, benchmark=False, save_every=10):
+    """
+    Train the virtual try-on model
+    
+    Args:
+        data_dir: Path to dataset directory
+        output_dir: Path to save checkpoints
+        epochs: Number of training epochs
+        batch_size: Training batch size
+        lr: Learning rate
+        resume_checkpoint: Path to resume training from (optional)
+        num_workers: Number of data loading workers
+        cache_data: Whether to cache dataset in memory
+        benchmark: Set cudnn.benchmark for potentially faster training
+        save_every: Save checkpoint every N epochs
+    
+    Returns:
+        Path to best model weights
+    """
     data_dir = Path(data_dir)
     output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
+    output_dir.mkdir(exist_ok=True, parents=True)
+    
+    if benchmark and torch.cuda.is_available():
+        torch.backends.cudnn.benchmark = True
+        print("CUDNN benchmark enabled")
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Device: {device}")
-
-    # 512x512 everywhere (simple)
+    print(f"Using device: {device}")
+    
+    # Data transforms
     transform = transforms.Compose([
         transforms.Resize((512, 512)),
         transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
+    
     pose_transform = transforms.Compose([
         transforms.Resize((512, 512)),
-        transforms.ToTensor(),
+        transforms.ToTensor()
     ])
-
-    train_ds = VirtualTryOnDataset(
+    
+    # Create datasets and dataloaders
+    train_dataset = VirtualTryOnDataset(
         data_dir=data_dir,
         pairs_file="train_pairs.txt",
         transform=transform,
         pose_transform=pose_transform,
-        split="train"
+        split="train",
+        cache_images=cache_data
     )
-    test_ds = VirtualTryOnDataset(
+    
+    test_dataset = VirtualTryOnDataset(
         data_dir=data_dir,
         pairs_file="test_pairs.txt",
         transform=transform,
         pose_transform=pose_transform,
-        split="test"
+        split="test",
+        cache_images=cache_data
     )
-
-    print(f"Train size: {len(train_ds)}")
-    print(f"Test  size: {len(test_ds)}")
-
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,
-                              num_workers=2, pin_memory=(device.type == "cuda"))
-    test_loader  = DataLoader(test_ds, batch_size=batch_size, shuffle=False,
-                              num_workers=2, pin_memory=(device.type == "cuda"))
-
-    model = TryOnGenerator(in_channels=9, out_channels=3).to(device)
-    opt = torch.optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
-    sched = torch.optim.lr_scheduler.StepLR(opt, step_size=20, gamma=0.5)
-
+    
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True
+    )
+    
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True
+    )
+    
+    print(f"Train dataset: {len(train_dataset)} samples")
+    print(f"Test dataset: {len(test_dataset)} samples")
+    
+    # Create model
+    model = TryOnGenerator(in_channels=9, out_channels=3)
+    model = model.to(device)
+    
+    # Optimizer
+    optimizer = optim.Adam(model.parameters(), lr=lr, betas=(0.5, 0.999))
+    
+    # Learning rate scheduler
+    sched = WarmupCosineScheduler(
+        optimizer=optimizer,
+        warmup_epochs=5,
+        max_epochs=epochs,
+        eta_min=1e-6
+    )
+    
+    # Loss functions
     l1 = nn.L1Loss()
     mse = nn.MSELoss()
-
-    best = float("inf")
-    best_weights = output_dir / "best_model_weights.pth"
-
-    for epoch in range(epochs):
-        # ---- train
+    
+    # Resume from checkpoint if provided
+    start_epoch = 0
+    best = float('inf')
+    if resume_checkpoint and os.path.exists(resume_checkpoint):
+        checkpoint = torch.load(resume_checkpoint, map_location=device)
+        if isinstance(checkpoint, dict) and 'model' in checkpoint:
+            model.load_state_dict(checkpoint['model'])
+            if 'optimizer' in checkpoint:
+                optimizer.load_state_dict(checkpoint['optimizer'])
+            if 'epoch' in checkpoint:
+                start_epoch = checkpoint['epoch'] + 1
+            if 'best' in checkpoint:
+                best = checkpoint['best']
+            print(f"Resumed from checkpoint: {resume_checkpoint} (epoch {start_epoch})")
+        else:
+            model.load_state_dict(checkpoint)
+            print(f"Loaded model weights from: {resume_checkpoint}")
+    
+    # Initialize AMP gradient scaler
+    scaler = GradScaler()
+    
+    # Path for best model weights
+    best_weights = output_dir / "best_model.pth"
+    
+    print(f"Starting training for {epochs} epochs...")
+    
+    # Training loop
+    for epoch in range(start_epoch, epochs):
         model.train()
         tr_loss = 0.0
-        pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs} [train]")
+        
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs}")
         for x, y in pbar:
             x, y = x.to(device), y.to(device)
-            opt.zero_grad()
-            y_hat = model(x)
-            loss_l1 = l1(y_hat, y)
-            loss_mse = mse(y_hat, y)
-            loss = loss_l1 + 0.1 * loss_mse
-            loss.backward()
-            opt.step()
-
+            
+            optimizer.zero_grad()
+            
+            # Use AMP for mixed precision training
+            with autocast():
+                y_hat = model(x)
+                loss = l1(y_hat, y) + 0.1 * mse(y_hat, y)
+            
+            # Backward and optimize with gradient scaling
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+            
             tr_loss += loss.item()
             pbar.set_postfix(loss=f"{loss.item():.4f}")
-
-        # ---- val
+        
+        # Validation
         model.eval()
         te_loss = 0.0
+        
+        pbar = tqdm(test_loader, desc="Validating")
         with torch.no_grad():
-            pbar = tqdm(test_loader, desc=f"Epoch {epoch+1}/{epochs} [test ]")
             for x, y in pbar:
                 x, y = x.to(device), y.to(device)
                 y_hat = model(x)
                 loss = l1(y_hat, y) + 0.1 * mse(y_hat, y)
                 te_loss += loss.item()
                 pbar.set_postfix(loss=f"{loss.item():.4f}")
-
+        
         tr_loss /= max(1, len(train_loader))
         te_loss /= max(1, len(test_loader))
-        sched.step()
-
+        sched.step(epoch)
+        
         print(f"Epoch {epoch+1}: train={tr_loss:.4f}  test={te_loss:.4f}  lr={sched.get_last_lr()[0]:.6f}")
-
-        # save best weights
+        
+        # Save best weights
         if te_loss < best:
             best = te_loss
-            torch.save(model.state_dict(), best_weights)
+            torch.save({
+                'epoch': epoch,
+                'model': model.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'best': best
+            }, best_weights)
             print(f"  ↳ saved new best to {best_weights} (test {best:.4f})")
-
-        # periodic
-        if (epoch + 1) % 10 == 0:
-            torch.save(model.state_dict(), output_dir / f"checkpoint_epoch_{epoch+1}.pth")
-
-    print("Done.")
+        
+        # Periodic checkpoint
+        if (epoch + 1) % save_every == 0:
+            checkpoint_path = output_dir / f"checkpoint_epoch_{epoch+1}.pth"
+            torch.save({
+                'epoch': epoch,
+                'model': model.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'best': best
+            }, checkpoint_path)
+    
+    print("Training completed!")
     print(f"Best test loss: {best:.4f}")
     return best_weights
