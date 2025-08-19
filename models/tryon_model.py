@@ -527,15 +527,24 @@ def train_model(data_dir, output_dir, epochs=50, batch_size=4, lr=0.0002, resume
     start_epoch = 0
     best = float('inf')
     if resume_checkpoint and os.path.exists(resume_checkpoint):
+        print(f"Loading checkpoint: {resume_checkpoint}")
         checkpoint = torch.load(resume_checkpoint, map_location=device)
         if isinstance(checkpoint, dict) and 'model' in checkpoint:
             model.load_state_dict(checkpoint['model'])
             if 'optimizer' in checkpoint:
-                optimizer.load_state_dict(checkpoint['optimizer'])
+                # Fix optimizer device mapping if needed
+                optimizer_state = checkpoint['optimizer']
+                for state in optimizer_state['state'].values():
+                    for k, v in state.items():
+                        if isinstance(v, torch.Tensor):
+                            state[k] = v.to(device)
+                optimizer.load_state_dict(optimizer_state)
             if 'epoch' in checkpoint:
                 start_epoch = checkpoint['epoch'] + 1
             if 'best' in checkpoint:
                 best = checkpoint['best']
+            if 'scaler' in checkpoint:
+                scaler.load_state_dict(checkpoint['scaler'])
             print(f"Resumed from checkpoint: {resume_checkpoint} (epoch {start_epoch})")
         else:
             model.load_state_dict(checkpoint)
@@ -551,6 +560,9 @@ def train_model(data_dir, output_dir, epochs=50, batch_size=4, lr=0.0002, resume
     
     # Training loop
     for epoch in range(start_epoch, epochs):
+        # Update scheduler at the beginning of each epoch
+        sched.step(epoch)
+        
         model.train()
         tr_loss = 0.0
         
@@ -592,17 +604,6 @@ def train_model(data_dir, output_dir, epochs=50, batch_size=4, lr=0.0002, resume
         
         print(f"Epoch {epoch+1}: train={tr_loss:.4f}  test={te_loss:.4f}  lr={sched.get_last_lr()[0]:.6f}")
         
-        # Save best weights
-        if te_loss < best:
-            best = te_loss
-            torch.save({
-                'epoch': epoch,
-                'model': model.state_dict(),
-                'optimizer': optimizer.state_dict(),
-                'best': best
-            }, best_weights)
-            print(f"  ↳ saved new best to {best_weights} (test {best:.4f})")
-        
         # Periodic checkpoint
         if (epoch + 1) % save_every == 0:
             checkpoint_path = output_dir / f"checkpoint_epoch_{epoch+1}.pth"
@@ -610,8 +611,21 @@ def train_model(data_dir, output_dir, epochs=50, batch_size=4, lr=0.0002, resume
                 'epoch': epoch,
                 'model': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
-                'best': best
+                'best': best,
+                'scaler': scaler.state_dict()  # Save scaler state
             }, checkpoint_path)
+        
+        # Save best weights
+        if te_loss < best:
+            best = te_loss
+            torch.save({
+                'epoch': epoch,
+                'model': model.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'best': best,
+                'scaler': scaler.state_dict()  # Save scaler state
+            }, best_weights)
+            print(f"  ↳ saved new best to {best_weights} (test {best:.4f})")
     
     print("Training completed!")
     print(f"Best test loss: {best:.4f}")

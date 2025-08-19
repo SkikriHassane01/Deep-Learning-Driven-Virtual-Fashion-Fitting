@@ -6,11 +6,19 @@ import torch
 from PIL import Image
 import os
 import shutil
-import sys  # Add missing import for sys module
+import sys
+
+# Add parent directories to path to find models module
+current_dir = Path(__file__).parent  # services
+parent_dir = current_dir.parent.parent.parent  # project root
+if str(parent_dir) not in sys.path:
+    sys.path.insert(0, str(parent_dir))
 
 # Import our virtual try-on model
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from models.tryon_model import VirtualTryOnModel
+try:
+    from models.tryon_model import VirtualTryOnModel
+except ImportError:
+    print("Warning: Could not import VirtualTryOnModel. Check project structure.")
 
 # Lazy-load the try-on model
 _tryon_model = None
