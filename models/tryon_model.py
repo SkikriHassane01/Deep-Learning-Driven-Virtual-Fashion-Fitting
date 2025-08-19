@@ -106,6 +106,100 @@ class TryOnGenerator(nn.Module):
         return self.final(u5)
 
 
+class VirtualTryOnModel:
+    """
+    Wrapper class for TryOnGenerator to be used in production/inference.
+    Provides simplified loading and inference methods for Django application.
+    """
+    def __init__(self, checkpoint_path=None, device=None):
+        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = TryOnGenerator(in_channels=9, out_channels=3)
+        self.model = self.model.to(self.device)
+        
+        if checkpoint_path:
+            self.load_checkpoint(checkpoint_path)
+        
+        self.model.eval()
+        
+        # Default transforms
+        self.transform = transforms.Compose([
+            transforms.Resize((512, 512)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
+        
+        self.mask_transform = transforms.Compose([
+            transforms.Resize((512, 512)),
+            transforms.ToTensor()
+        ])
+    
+    def load_checkpoint(self, checkpoint_path):
+        """Load model weights from checkpoint"""
+        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        if isinstance(checkpoint, dict) and 'model' in checkpoint:
+            self.model.load_state_dict(checkpoint['model'])
+        else:
+            self.model.load_state_dict(checkpoint)
+        print(f"Loaded model weights from: {checkpoint_path}")
+    
+    def predict(self, person_img, cloth_img, cloth_mask=None, pose_map=None, body_mask=None):
+        """
+        Run inference with the model
+        
+        Args:
+            person_img: PIL Image of person
+            cloth_img: PIL Image of clothing item
+            cloth_mask: Optional PIL Image of clothing mask (will generate if None)
+            pose_map: Optional PIL Image of pose keypoints (will use empty if None)
+            body_mask: Optional PIL Image of body segmentation (will use full mask if None)
+            
+        Returns:
+            PIL Image of the virtual try-on result
+        """
+        # Prepare input
+        if cloth_mask is None:
+            cloth_mask = Image.new("L", cloth_img.size, 255)  # Default white mask
+        
+        if pose_map is None:
+            pose_map = Image.new("L", person_img.size, 0)  # Empty pose map
+            
+        if body_mask is None:
+            body_mask = Image.new("L", person_img.size, 255)  # Full body mask
+        
+        # Apply transforms
+        person_tensor = self.transform(person_img)
+        cloth_tensor = self.transform(cloth_img)
+        cloth_mask_tensor = self.mask_transform(cloth_mask)
+        pose_map_tensor = self.mask_transform(pose_map)
+        body_mask_tensor = self.mask_transform(body_mask)
+        
+        # Create input tensor
+        x = torch.cat([person_tensor, cloth_tensor, cloth_mask_tensor, 
+                      pose_map_tensor, body_mask_tensor], dim=0)
+        x = x.unsqueeze(0).to(self.device)  # Add batch dimension
+        
+        # Run inference
+        with torch.no_grad():
+            output = self.model(x)
+        
+        # Convert to image
+        output_tensor = output.squeeze().cpu()
+        output_img = self.tensor_to_pil(output_tensor)
+        
+        return output_img
+    
+    @staticmethod
+    def tensor_to_pil(tensor):
+        """Convert a normalized tensor to PIL Image"""
+        # Denormalize
+        tensor = (tensor * 0.5) + 0.5
+        tensor = torch.clamp(tensor, 0, 1)
+        
+        # Convert to PIL
+        array = (tensor.permute(1, 2, 0).numpy() * 255).astype('uint8')
+        return Image.fromarray(array)
+
+
 # -------------------------
 #   Dataset (matching your structure)
 # -------------------------
