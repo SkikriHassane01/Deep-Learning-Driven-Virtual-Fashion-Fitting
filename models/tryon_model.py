@@ -528,27 +528,51 @@ def train_model(data_dir, output_dir, epochs=50, batch_size=4, lr=0.0002, resume
     best = float('inf')
     if resume_checkpoint and os.path.exists(resume_checkpoint):
         print(f"Loading checkpoint: {resume_checkpoint}")
-        checkpoint = torch.load(resume_checkpoint, map_location=device)
-        if isinstance(checkpoint, dict) and 'model' in checkpoint:
-            model.load_state_dict(checkpoint['model'])
-            if 'optimizer' in checkpoint:
-                # Fix optimizer device mapping if needed
-                optimizer_state = checkpoint['optimizer']
-                for state in optimizer_state['state'].values():
-                    for k, v in state.items():
-                        if isinstance(v, torch.Tensor):
-                            state[k] = v.to(device)
-                optimizer.load_state_dict(optimizer_state)
-            if 'epoch' in checkpoint:
-                start_epoch = checkpoint['epoch'] + 1
-            if 'best' in checkpoint:
-                best = checkpoint['best']
-            if 'scaler' in checkpoint:
-                scaler.load_state_dict(checkpoint['scaler'])
-            print(f"Resumed from checkpoint: {resume_checkpoint} (epoch {start_epoch})")
-        else:
-            model.load_state_dict(checkpoint)
-            print(f"Loaded model weights from: {resume_checkpoint}")
+        try:
+            # First try with weights_only=True (safer)
+            checkpoint = torch.load(resume_checkpoint, map_location=device)
+            if isinstance(checkpoint, dict) and 'model' in checkpoint:
+                model.load_state_dict(checkpoint['model'])
+                if 'optimizer' in checkpoint:
+                    optimizer.load_state_dict(checkpoint['optimizer'])
+                if 'epoch' in checkpoint:
+                    start_epoch = checkpoint['epoch'] + 1
+                if 'best' in checkpoint:
+                    best = checkpoint['best']
+                print(f"Resumed from checkpoint: {resume_checkpoint} (epoch {start_epoch})")
+            else:
+                model.load_state_dict(checkpoint)
+                print(f"Loaded model weights from: {resume_checkpoint}")
+        except RuntimeError as e:
+            if "WeightsUnpickler error" in str(e):
+                print("Warning: Checkpoint loading failed with weights_only=True")
+                print("Attempting to load with weights_only=False (less secure but more compatible)")
+                try:
+                    # Try with weights_only=False (less secure but compatible with older PyTorch)
+                    checkpoint = torch.load(
+                        resume_checkpoint, 
+                        map_location=device, 
+                        weights_only=False
+                    )
+                    if isinstance(checkpoint, dict) and 'model' in checkpoint:
+                        model.load_state_dict(checkpoint['model'])
+                        if 'optimizer' in checkpoint:
+                            optimizer.load_state_dict(checkpoint['optimizer'])
+                        if 'epoch' in checkpoint:
+                            start_epoch = checkpoint['epoch'] + 1
+                        if 'best' in checkpoint:
+                            best = checkpoint['best']
+                        print(f"Resumed from checkpoint: {resume_checkpoint} (epoch {start_epoch})")
+                    else:
+                        model.load_state_dict(checkpoint)
+                        print(f"Loaded model weights from: {resume_checkpoint}")
+                except Exception as e2:
+                    # If both approaches fail, raise the original error
+                    print(f"Error loading checkpoint: {e}")
+                    raise e
+            else:
+                # For other types of errors, raise them directly
+                raise e
     
     # Initialize AMP gradient scaler
     scaler = GradScaler()
