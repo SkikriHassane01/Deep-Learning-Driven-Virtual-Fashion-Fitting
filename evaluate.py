@@ -39,6 +39,37 @@ def evaluate_model(model_path, test_data_dir, output_dir):
     output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
     
+    # Auto-detect directory structure
+    test_data_dir = Path(test_data_dir)
+    print(f"🔍 Checking test data structure in: {test_data_dir}")
+    
+    # Look for common directory patterns
+    possible_person_dirs = ["image", "person", "test/image"]
+    possible_cloth_dirs = ["cloth", "clothing", "test/cloth"]
+    
+    person_dir = None
+    cloth_dir = None
+    
+    for dir_name in possible_person_dirs:
+        check_dir = test_data_dir / dir_name
+        if check_dir.exists() and list(check_dir.glob("*.jpg")):
+            person_dir = check_dir
+            print(f"✅ Found person images in: {dir_name}")
+            break
+    
+    for dir_name in possible_cloth_dirs:
+        check_dir = test_data_dir / dir_name
+        if check_dir.exists() and list(check_dir.glob("*.jpg")):
+            cloth_dir = check_dir
+            print(f"✅ Found cloth images in: {dir_name}")
+            break
+    
+    if not person_dir or not cloth_dir:
+        print("❌ Could not find person or cloth directories with images")
+        print(f"Looked for person images in: {possible_person_dirs}")
+        print(f"Looked for cloth images in: {possible_cloth_dirs}")
+        return None
+    
     # Try to load model
     try:
         from models.tryon_model import VirtualTryOnModel
@@ -81,19 +112,28 @@ def evaluate_model(model_path, test_data_dir, output_dir):
     # Process each test pair
     successful_pairs = 0
     for i, (person_img, cloth_img) in enumerate(tqdm(test_pairs)):
-        # Construct paths
-        person_path = test_data_dir / 'person' / person_img
+        # Construct paths - fix directory structure
+        person_path = test_data_dir / 'image' / person_img  # Changed from 'person' to 'image'
         cloth_path = test_data_dir / 'cloth' / cloth_img
         cloth_mask_path = test_data_dir / 'cloth-mask' / cloth_img
         
         # Get person name without extension for pose
         person_name = os.path.splitext(person_img)[0]
-        pose_path = test_data_dir / 'pose' / f"{person_name}.json"
+        pose_path = test_data_dir / 'openpose_json' / f"{person_name}_keypoints.json"  # Added '_keypoints'
+        
+        # Debug: Print what we're looking for
+        if i < 5:  # Only print first 5 for debugging
+            print(f"\nDebug pair {i+1}:")
+            print(f"  Person: {person_path} (exists: {person_path.exists()})")
+            print(f"  Cloth: {cloth_path} (exists: {cloth_path.exists()})")
+            print(f"  Mask: {cloth_mask_path} (exists: {cloth_mask_path.exists()})")
+            print(f"  Pose: {pose_path} (exists: {pose_path.exists()})")
         
         # Skip if any required file is missing
         required_files = [person_path, cloth_path]
         if not all(p.exists() for p in required_files):
-            print(f"Skipping pair {i+1}: {person_img}, {cloth_img} due to missing files")
+            if i < 10:  # Only print first 10 missing files
+                print(f"Skipping pair {i+1}: {person_img}, {cloth_img} due to missing files")
             continue
         
         # Generate try-on result

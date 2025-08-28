@@ -1,83 +1,82 @@
+# tryon/services/auto_mask.py
 from pathlib import Path
-from PIL import Image
-import numpy as np
-import cv2
+from PIL import Image, ImageOps
 
-def auto_cloth_mask(cloth_img_path, mask_output_path):
+def auto_cloth_mask(cloth_image_path, mask_output_path):
     """
-    Automatically generate cloth mask from cloth image using GrabCut algorithm.
-    
-    Args:
-        cloth_img_path: Path to the cloth image
-        mask_output_path: Path where the mask should be saved
-        
-    Returns:
-        Path: Path to the generated mask
+    Enhanced cloth mask generation:
+    - Use alpha channel if present; otherwise apply advanced background removal.
+    Always writes a mask file. Accepts Path or str.
     """
-    try:
-        # Read the image
-        img = cv2.imread(str(cloth_img_path))
-        if img is None:
-            raise ValueError(f"Could not read image at {cloth_img_path}")
+    cloth_image_path = Path(cloth_image_path)
+    mask_output_path = Path(mask_output_path)
+    mask_output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with Image.open(cloth_image_path).convert("RGBA") as im:
+        alpha = im.getchannel("A")
         
-        # Create a simple initial mask
-        mask = np.zeros(img.shape[:2], np.uint8)
-        
-        # Assume the center part of the image is foreground
-        h, w = img.shape[:2]
-        cv2.rectangle(mask, (w//4, h//4), (3*w//4, 3*h//4), 1, -1)
-        
-        # Background and foreground models
-        bgdModel = np.zeros((1, 65), np.float64)
-        fgdModel = np.zeros((1, 65), np.float64)
-        
-        # Apply GrabCut
-        rect = (w//4, h//4, w//2, h//2)
-        try:
-            cv2.grabCut(img, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
-        except cv2.error:
-            # Fallback if GrabCut fails
-            # Simple thresholding on lightness
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            _, mask = cv2.threshold(hsv[:,:,2], 200, 255, cv2.THRESH_BINARY_INV)
-        
-        # Create mask where sure and probable foreground are set to white
-        mask2 = np.where((mask==2) | (mask==0), 0, 255).astype('uint8')
-        
-        # Clean up mask with morphological operations
-        kernel = np.ones((5,5), np.uint8)
-        mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernel)
-        mask2 = cv2.morphologyEx(mask2, cv2.MORPH_CLOSE, kernel)
-        
-        # Further clean small noise by finding largest contour
-        contours, _ = cv2.findContours(mask2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if contours:
-            max_contour = max(contours, key=cv2.contourArea)
-            mask2 = np.zeros_like(mask2)
-            cv2.drawContours(mask2, [max_contour], -1, 255, -1)
-        
-        # Save the mask
-        cv2.imwrite(str(mask_output_path), mask2)
-        
-    except Exception as e:
-        print(f"Error in auto_cloth_mask: {e}")
-        # Fallback: create a simple mask
-        try:
-            with Image.open(cloth_img_path) as img:
-                # Convert to grayscale
-                gray = img.convert('L')
+        # If alpha channel is helpful, use it
+        if alpha.getextrema() != (255, 255):
+            mask = alpha
+        else:
+            # Enhanced background removal using multiple methods
+            rgb_img = im.convert("RGB")
+            
+            # Method 1: HSV-based background removal
+            import numpy as np
+            import cv2
+            
+            img_array = np.array(rgb_img)
+            hsv = cv2.cvtColor(img_array, cv2.COLOR_RGB2HSV)
+            
+            # Create mask for non-white backgrounds
+            lower_white = np.array([0, 0, 200])
+            upper_white = np.array([180, 30, 255])
+            white_mask = cv2.inRange(hsv, lower_white, upper_white)
+            
+            # Invert to get foreground
+            fg_mask = cv2.bitwise_not(white_mask)
+            
+            # Clean up with morphological operations
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_CLOSE, kernel)
+            fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
+            
+            # Fill holes
+            kernel_large = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+            fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_CLOSE, kernel_large)
+            
+            # If mask is too empty or too full, use GrabCut
+            mask_ratio = np.sum(fg_mask > 0) / fg_mask.size
+            if mask_ratio < 0.1 or mask_ratio > 0.9:
+                print("HSV mask poor quality, trying GrabCut...")
                 
-                # Threshold: non-white pixels are considered cloth
-                threshold = 240
-                binary = gray.point(lambda x: 0 if x > threshold else 255, '1')
-                binary.save(mask_output_path)
-        except Exception as e2:
-            print(f"Fallback mask creation failed: {e2}")
-            # Final fallback: create a white rectangle
-            from PIL import ImageDraw
-            mask = Image.new('L', (512, 512), 0)
-            draw = ImageDraw.Draw(mask)
-            draw.rectangle([100, 100, 412, 412], fill=255)
-            mask.save(mask_output_path)
-    
-    return Path(mask_output_path)
+                # Use GrabCut for better segmentation
+                mask_gc = np.zeros(img_array.shape[:2], dtype=np.uint8)
+                h, w = img_array.shape[:2]
+                
+                # Define rectangle (assume cloth is in center 80% of image)
+                margin_x, margin_y = int(w * 0.1), int(h * 0.1)
+                rect = (margin_x, margin_y, w - 2*margin_x, h - 2*margin_y)
+                
+                bgdModel = np.zeros((1, 65), np.float64)
+                fgdModel = np.zeros((1, 65), np.float64)
+                
+                try:
+                    cv2.grabCut(img_array, mask_gc, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
+                    fg_mask = np.where((mask_gc == 2) | (mask_gc == 0), 0, 255).astype('uint8')
+                except:
+                    print("GrabCut failed, using HSV mask")
+            
+            mask = Image.fromarray(fg_mask, mode="L")
+
+        # Ensure mask is binary and clean
+        mask = mask.convert("L")
+        # Apply threshold to ensure binary mask
+        mask_array = np.array(mask)
+        mask_array = np.where(mask_array > 127, 255, 0).astype(np.uint8)
+        mask = Image.fromarray(mask_array, mode="L")
+        
+        mask.save(mask_output_path)
+
+    return str(mask_output_path)

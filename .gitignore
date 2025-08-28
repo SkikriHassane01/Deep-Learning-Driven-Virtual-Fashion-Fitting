@@ -213,3 +213,6 @@ marimo/_lsp/
 __marimo__/
 models/pose/
 models/segmentation
+.vscode/settings.json
+tryon/services/pose_seg.py.bak
+models/tryon/best_model.pth
