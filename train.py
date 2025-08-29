@@ -119,7 +119,6 @@ def main():
                         help="Set torch.backends.cudnn.benchmark=True for potentially faster training")
     parser.add_argument("--save-every", type=int, default=10,
                         help="Save checkpoint every N epochs")
-    
     # Performance optimization options
     parser.add_argument("--mixed-precision", action="store_true", 
                         help="Use mixed precision training for faster training")

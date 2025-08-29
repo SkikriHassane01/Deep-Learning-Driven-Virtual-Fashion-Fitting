@@ -1,77 +1,35 @@
-<!doctype html>
-<html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
+  <title>Try-On Result</title>
+  <link rel="stylesheet" href="{% static 'tryon/css/styles.css' %}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Virtual Try-On • Result</title>
-  {% load static %}
-  <link rel="stylesheet" type="text/css" href="{% static 'tryon/css/styles.css' %}">
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>Try-On Result</h1>
-      <p>Your virtual fashion transformation</p>
-    </div>
-    
-    <div class="content">
-      
-      <div class="result-section">
-        <h2>📸 Your Original Photo</h2>
-        <div class="image-container">
-          <img src="{{ item.user_image.url }}" alt="Your uploaded photo"/>
-        </div>
-      </div>
+    <h1>Your Try-On</h1>
 
-      {% if item.generate_from_prompt %}
-        <div class="prompt-display">
-          <strong>✨ Generated from text:</strong> "{{ item.prompt }}"
-          <p><em>Our AI used Stable Diffusion to create clothing from your description</em></p>
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="msg {{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="card">
+      {% if obj.result_image %}
+        <img src="/media/{{ obj.result_image }}" alt="Result image" class="result-img"/>
+        <div class="meta">
+          <div><strong>Prompt:</strong> {{ obj.prompt }}</div>
+          <a class="btn" href="{% url 'home' %}">Try another</a>
         </div>
       {% else %}
-        <div class="result-section">
-          <h2>👕 Your Selected Clothing</h2>
-          <div class="image-container">
-            <img src="{{ item.cloth_image.url }}" alt="Selected clothing item"/>
-          </div>
-          <p><em>Our AI used advanced computer vision to fit this clothing to your body</em></p>
-        </div>
+        <p>No result image was saved for this request.</p>
+        <a class="btn" href="{% url 'home' %}">Back</a>
       {% endif %}
-
-      {% if item.result_image %}
-        <div class="result-section">
-          <h2>🎨 Virtual Try-On Result</h2>
-          <div class="image-container">
-            <img src="{{ item.result_image.url }}" alt="Virtual try-on result"/>
-          </div>
-          <div class="method-info">
-            {% if item.generate_from_prompt %}
-              <p><strong>Method:</strong> Text-to-Cloth Generation + Virtual Fitting</p>
-              <p>1. Generated clothing from: "{{ item.prompt }}"</p>
-              <p>2. Applied pose estimation and body segmentation</p>
-              <p>3. Fitted the generated clothing to your body shape</p>
-            {% else %}
-              <p><strong>Method:</strong> Image-based Virtual Try-On</p>
-              <p>1. Analyzed your uploaded clothing image</p>
-              <p>2. Applied pose estimation and body segmentation</p>
-              <p>3. Warped and fitted the clothing to your body shape</p>
-            {% endif %}
-          </div>
-        </div>
-      {% else %}
-        <div class="processing-message">
-          <p>🔄 <em>Processing your try-on... The AI is working its magic!</em></p>
-          <script>
-            setTimeout(function() {
-              window.location.reload();
-            }, 5000);
-          </script>
-        </div>
-      {% endif %}
-
-      <div style="text-align: center; margin-top: 30px;">
-        <a href="{% url 'home' %}" class="back-link">← Try Another Look</a>
-      </div>
     </div>
   </div>
 </body>

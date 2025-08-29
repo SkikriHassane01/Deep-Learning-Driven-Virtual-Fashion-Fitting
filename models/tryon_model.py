@@ -129,20 +129,21 @@ class VirtualTryOnDataset(Dataset):
         self.cache_images = cache_images
         self.cached_data = {}
 
+        # Load pairs file - fixed duplicate parsing
         pairs_path = self.data_dir / pairs_file
         self.pairs = []
-        with pairs_path.open("r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#'):
+        try:
+            with pairs_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
                     parts = line.split()
                     if len(parts) >= 2:
                         self.pairs.append((parts[0], parts[1]))
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                p, c = line.split()
-                self.pairs.append((p, c))
+        except FileNotFoundError:
+            print(f"Warning: Pairs file {pairs_path} not found. Creating empty dataset.")
+            self.pairs = []
 
         self.split_dir = self.data_dir / self.split
         self.person_dir = self.split_dir / "image"
@@ -150,14 +151,15 @@ class VirtualTryOnDataset(Dataset):
         self.mask_dir = self.split_dir / "cloth-mask"
         self.pose_dir = self.split_dir / "openpose_json"
 
-        if self.cache_images:
+        # Cache images if requested - fixed duplicate caching
+        if self.cache_images and len(self.pairs) > 0:
             print(f"Caching {len(self.pairs)} {split} items in memory...")
             for idx in tqdm(range(len(self.pairs))):
-                self._cache_item(idx)
                 self._cache_item(idx)
 
     @staticmethod
     def _find_mask(mask_dir: Path, cloth_name: str):
+        """Find mask file for given cloth name"""
         stem = Path(cloth_name).stem
         candidates = [
             mask_dir / cloth_name,
@@ -167,16 +169,16 @@ class VirtualTryOnDataset(Dataset):
         for p in candidates:
             if p.exists():
                 return p
-            if p.exists():
-                return p
         return None
 
     def _load_pose_map(self, json_path: Path, size_hw):
+        """Load pose map from JSON file"""
         H, W = size_hw
         pose_map = np.zeros((H, W), dtype=np.uint8)
         try:
             with json_path.open("r", encoding="utf-8") as f:
                 data = json.load(f)
+            
             keypoints = []
             if isinstance(data, dict):
                 if "people" in data and data["people"]:
@@ -185,20 +187,28 @@ class VirtualTryOnDataset(Dataset):
                     keypoints = data["pose_keypoints_2d"]
                 elif "keypoints" in data:
                     keypoints = data["keypoints"]
+            
+            # Handle flat list format [x1, y1, conf1, x2, y2, conf2, ...]
             for i in range(0, len(keypoints), 3):
                 if i + 2 >= len(keypoints):
                     break
-                x, y, conf = keypoints[i], keypoints[i + 1], keypoints[i + 2]
-                if conf is None or conf < 0.1:
+                try:
+                    x, y, conf = keypoints[i], keypoints[i + 1], keypoints[i + 2]
+                    if conf is None or conf < 0.1:
+                        continue
+                    xi, yi = int(round(x)), int(round(y))
+                    if 0 <= xi < W and 0 <= yi < H:
+                        cv2.circle(pose_map, (xi, yi), 3, 255, -1)
+                except (ValueError, TypeError, IndexError):
                     continue
-                xi, yi = int(round(x)), int(round(y))
-                if 0 <= xi < W and 0 <= yi < H:
-                    cv2.circle(pose_map, (xi, yi), 3, 255, -1)
+                    
         except Exception as e:
             print(f"[warn] pose parse failed for {json_path.name}: {e}")
+        
         return Image.fromarray(pose_map, mode="L")
 
     def _cache_item(self, idx):
+        """Cache a single item in memory"""
         try:
             person_name, cloth_name = self.pairs[idx]
             person_path = self.person_dir / person_name
@@ -211,6 +221,7 @@ class VirtualTryOnDataset(Dataset):
             cloth_mask = Image.open(mask_path).convert("L") if mask_path and mask_path.exists() else Image.new("L", cloth_img.size, 255)
             pose_map = self._load_pose_map(pose_json, (person_img.size[1], person_img.size[0])) if pose_json.exists() else Image.new("L", person_img.size, 0)
             body_mask = Image.new("L", person_img.size, 255)
+            
             self.cached_data[idx] = (person_img, cloth_img, cloth_mask, pose_map, body_mask)
         except Exception as e:
             print(f"Warning: cache item {idx} failed: {e}")
@@ -429,6 +440,11 @@ def train_model(data_dir, output_dir, epochs=50, batch_size=4, lr=2e-4, resume_c
     print("Training completed!")
     print(f"Best test loss: {best:.4f}")
     return best_weights
+
+
+# -------------------------
+#   VirtualTryOnModel Class
+# -------------------------
 class VirtualTryOnModel:
     """
     Wrapper class for the virtual try-on model that handles loading,
@@ -442,7 +458,7 @@ class VirtualTryOnModel:
             
         self.model = TryOnGenerator(in_channels=9, out_channels=3).to(self.device)
         
-        if model_path:
+        if model_path and os.path.exists(model_path):
             try:
                 checkpoint = load_checkpoint_trusted(model_path, map_location=self.device)
                 if isinstance(checkpoint, dict) and "model" in checkpoint:
@@ -451,7 +467,10 @@ class VirtualTryOnModel:
                     self.model.load_state_dict(checkpoint)
                 print(f"Model loaded from {model_path}")
             except Exception as e:
-                raise RuntimeError(f"Failed to load model from {model_path}: {e}")
+                print(f"Warning: Failed to load model from {model_path}: {e}")
+                print("Continuing with randomly initialized weights...")
+        elif model_path:
+            print(f"Warning: Model path {model_path} does not exist. Using randomly initialized weights.")
         
         self.model.eval()
         
@@ -490,27 +509,24 @@ class VirtualTryOnModel:
                 elif "keypoints" in data:
                     keypoints = data["keypoints"]
             
-            # Safely handle different keypoint formats
+            # Handle different keypoint formats
             if isinstance(keypoints, list):
                 # If keypoints is already a list of [x, y, conf] triplets
                 if keypoints and isinstance(keypoints[0], list) and len(keypoints[0]) == 3:
                     for x, y, conf in keypoints:
                         if x is None or y is None or conf is None:
                             continue
-                        
-                        # Convert to numeric types explicitly
                         try:
                             xi, yi = int(float(x)), int(float(y))
                             if 0 <= xi < W and 0 <= yi < H:
                                 cv2.circle(pose_map, (xi, yi), 3, 255, -1)
                         except (ValueError, TypeError):
                             continue
-                # If keypoints is a flat list of [x1, y1, conf1, x2, y2, conf2, ...]
+                # If keypoints is a flat list [x1, y1, conf1, x2, y2, conf2, ...]
                 else:
                     for i in range(0, len(keypoints), 3):
                         if i + 2 >= len(keypoints):
                             break
-                            
                         try:
                             x, y, conf = float(keypoints[i]), float(keypoints[i + 1]), float(keypoints[i + 2])
                             if conf < 0.1:
@@ -529,9 +545,6 @@ class VirtualTryOnModel:
     def _create_body_mask(self, person_img):
         """Create a basic body mask for the person image."""
         try:
-            import cv2
-            import numpy as np
-            
             # Convert to numpy array
             img_array = np.array(person_img)
             h, w = img_array.shape[:2]
@@ -860,3 +873,9 @@ class VirtualTryOnModel:
             output_img = Image.fromarray((output_np * 255).astype(np.uint8))
             
             return output_img
+
+
+# -------------------------
+#   Backward Compatibility Alias
+# -------------------------
+TryOnModel = VirtualTryOnModel

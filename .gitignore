@@ -216,3 +216,4 @@ models/segmentation
 .vscode/settings.json
 tryon/services/pose_seg.py.bak
 models/tryon/best_model.pth
+models/best_model.pth
