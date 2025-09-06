@@ -3,8 +3,16 @@
 {% block title %}AI Virtual Try-On Generator - Virtual Fashion{% endblock %}
 
 {% block content %}
-<!-- Generation Page Header -->
+<!-- Generation Page Header with Moving Background -->
 <section class="hero-section section" style="padding: 4rem 0 2rem;">
+    <div class="floating-fashion-elements">
+        <div class="floating-element"><i class="bi bi-stars"></i></div>
+        <div class="floating-element"><i class="bi bi-palette"></i></div>
+        <div class="floating-element"><i class="bi bi-magic"></i></div>
+        <div class="floating-element"><i class="bi bi-brush"></i></div>
+        <div class="floating-element"><i class="bi bi-lightning"></i></div>
+        <div class="floating-element"><i class="bi bi-droplet"></i></div>
+    </div>
     <div class="container">
         <div class="row">
             <div class="col-12">
@@ -29,103 +37,7 @@
     </div>
 </section>
 
-<!-- Quick Template Selection Section -->
-<section class="template-section section" style="padding: 2rem 0 3rem;">
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="text-center mb-4">
-                    <h3 style="color: var(--text-primary); margin-bottom: 1rem;">Quick Templates</h3>
-                    <p style="color: var(--text-secondary);">Click on any template to auto-fill your prompt</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="row g-3">
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="template-card" onclick="useTemplate('A stylish red evening dress with long sleeves and elegant design')">
-                    <div class="template-icon">
-                        <i class="bi bi-stars"></i>
-                    </div>
-                    <h6>Evening Dress</h6>
-                    <p>Red elegant dress with long sleeves</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="template-card" onclick="useTemplate('A casual blue denim jacket with vintage style and comfortable fit')">
-                    <div class="template-icon">
-                        <i class="bi bi-jacket"></i>
-                    </div>
-                    <h6>Denim Jacket</h6>
-                    <p>Casual blue vintage jacket</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="template-card" onclick="useTemplate('A formal black business suit with tailored fit and professional appearance')">
-                    <div class="template-icon">
-                        <i class="bi bi-briefcase"></i>
-                    </div>
-                    <h6>Business Suit</h6>
-                    <p>Professional black formal suit</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="template-card" onclick="useTemplate('A trendy white crop top with modern design and comfortable fabric')">
-                    <div class="template-icon">
-                        <i class="bi bi-heart"></i>
-                    </div>
-                    <h6>Crop Top</h6>
-                    <p>Trendy white modern crop top</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="template-card" onclick="useTemplate('A cozy brown leather jacket with classic motorcycle style and premium quality')">
-                    <div class="template-icon">
-                        <i class="bi bi-lightning"></i>
-                    </div>
-                    <h6>Leather Jacket</h6>
-                    <p>Classic brown motorcycle jacket</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="template-card" onclick="useTemplate('A beautiful floral summer dress with vibrant colors and flowing design')">
-                    <div class="template-icon">
-                        <i class="bi bi-flower1"></i>
-                    </div>
-                    <h6>Summer Dress</h6>
-                    <p>Floral dress with vibrant colors</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="template-card" onclick="useTemplate('A sporty gray hoodie with comfortable fit and modern athletic design')">
-                    <div class="template-icon">
-                        <i class="bi bi-play-circle"></i>
-                    </div>
-                    <h6>Athletic Hoodie</h6>
-                    <p>Sporty gray modern hoodie</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-4 col-sm-6">
-                <div class="template-card" onclick="useTemplate('An elegant navy blue blazer with sophisticated style and perfect tailoring')">
-                    <div class="template-icon">
-                        <i class="bi bi-award"></i>
-                    </div>
-                    <h6>Navy Blazer</h6>
-                    <p>Sophisticated navy blue blazer</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Generation Interface Section -->
+<!-- Generation Interface Section - Simplified and Optimized -->
 <section class="try-on-section section section-light" style="padding: 3rem 0 4rem;">
     <div class="container">
         <div class="row justify-content-center">
@@ -147,16 +59,16 @@
                     </div>
                 </div>
 
-                <!-- Clean Upload Form -->
+                <!-- Clean Upload Form - Reorganized Flow -->
                 <div class="upload-form-container">
                     <form method="post" action="{% url 'upload' %}" enctype="multipart/form-data" id="uploadForm">
                         {% csrf_token %}
                         <div class="card upload-card" style="background: var(--glass-secondary); backdrop-filter: blur(20px); border: 1px solid var(--glass-border-secondary); border-radius: 24px; padding: 2.5rem; box-shadow: var(--shadow-xl);">
                             <div class="card-body" style="padding: 0;">
-                                <!-- File Upload Section -->
+                                <!-- Step 1: File Upload Section -->
                                 <div class="mb-4">
                                     <h5 class="form-section-title" style="color: var(--text-primary); margin-bottom: 1.5rem; font-weight: 600;">
-                                        <i class="bi bi-cloud-upload me-2"></i>Upload Your Photo
+                                        <i class="bi bi-cloud-upload me-2"></i>Step 1: Upload Your Photo
                                     </h5>
                                     <div class="file-upload-wrapper" style="position: relative; border: 2px dashed var(--glass-border-secondary); border-radius: 16px; padding: 3rem 2rem; background: var(--glass-secondary); transition: all 0.3s ease; cursor: pointer;">
                                         <input type="file" 
@@ -173,28 +85,76 @@
                                     </div>
                                 </div>
 
-                                <!-- Clothing Description Section -->
+                                <!-- Step 2: Quick Templates Section -->
                                 <div class="mb-4">
                                     <h5 class="form-section-title" style="color: var(--text-primary); margin-bottom: 1.5rem; font-weight: 600;">
-                                        <i class="bi bi-palette me-2"></i>Describe Your Desired Outfit
+                                        <i class="bi bi-palette me-2"></i>Step 2: Choose a Template (Optional)
+                                    </h5>
+                                    <div class="row g-3">
+                                        <div class="col-lg-3 col-md-4 col-sm-6">
+                                            <div class="template-card" onclick="useTemplate('A stylish red evening dress with long sleeves and elegant design')">
+                                                <div class="template-icon">
+                                                    <i class="bi bi-stars"></i>
+                                                </div>
+                                                <h6>Evening Dress</h6>
+                                                <p>Red elegant dress with long sleeves</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-lg-3 col-md-4 col-sm-6">
+                                            <div class="template-card" onclick="useTemplate('A casual blue denim jacket with vintage style and comfortable fit')">
+                                                <div class="template-icon">
+                                                    <i class="bi bi-layers"></i>
+                                                </div>
+                                                <h6>Denim Jacket</h6>
+                                                <p>Casual blue vintage jacket</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-lg-3 col-md-4 col-sm-6">
+                                            <div class="template-card" onclick="useTemplate('A formal black business suit with tailored fit and professional appearance')">
+                                                <div class="template-icon">
+                                                    <i class="bi bi-briefcase"></i>
+                                                </div>
+                                                <h6>Business Suit</h6>
+                                                <p>Professional black formal suit</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-lg-3 col-md-4 col-sm-6">
+                                            <div class="template-card" onclick="useTemplate('A trendy white crop top with modern design and comfortable fabric')">
+                                                <div class="template-icon">
+                                                    <i class="bi bi-heart"></i>
+                                                </div>
+                                                <h6>Crop Top</h6>
+                                                <p>Trendy white modern crop top</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Clothing Description Section -->
+                                <div class="mb-4">
+                                    <h5 class="form-section-title" style="color: var(--text-primary); margin-bottom: 1.5rem; font-weight: 600;">
+                                        <i class="bi bi-chat-square-text me-2"></i>Step 3: Describe Your Desired Outfit
                                     </h5>
                                     <div class="input-wrapper" style="position: relative;">
                                         <textarea name="clothing_prompt" 
                                                   id="clothingDescription" 
                                                   class="form-control glass-input" 
-                                                  rows="4" 
+                                                  rows="3" 
                                                   placeholder="Describe the clothing you want to try on... e.g., 'a red dress with long sleeves', 'a blue denim jacket', 'a formal black suit'"
                                                   required 
-                                                  style="background: var(--glass-primary); border: 1px solid var(--glass-border-primary); border-radius: 12px; padding: 1rem; color: var(--text-primary); font-size: 1rem; resize: vertical; min-height: 120px;"></textarea>
+                                                  style="background: var(--glass-primary); border: 1px solid var(--glass-border-primary); border-radius: 12px; padding: 1rem; color: var(--text-primary); font-size: 1rem; resize: vertical; min-height: 100px;"></textarea>
                                     </div>
                                 </div>
 
-                                <!-- Enhanced Submit Button -->
+                                <!-- Step 4: Submit Button -->
                                 <div class="text-center">
                                     <button type="submit" 
                                             id="submitBtn" 
                                             class="btn btn-primary btn-lg" 
-                                            style="padding: 1rem 3rem; font-size: 1.1rem; border-radius: 16px; background: var(--gradient-primary); border: none; box-shadow: var(--shadow-lg), var(--glow-primary); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;">
+                                            style="padding: 1rem 3rem; font-size: 1.1rem; border-radius: 16px; background: var(--gradient-primary); border: none; box-shadow: var(--shadow-lg), var(--glow-primary); transition: all 0.3s ease; position: relative; overflow: hidden;">
                                         <i class="bi bi-magic me-2"></i>
                                         <span>Generate Virtual Try-On</span>
                                     </button>
@@ -210,351 +170,51 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-console.log('🚀 Generation Page Loaded - Virtual Fashion Try-On System');
-
-// Template selection function
-function useTemplate(templateText) {
-    const clothingDescription = document.getElementById('clothingDescription');
-    if (clothingDescription) {
-        clothingDescription.value = templateText;
-        clothingDescription.focus();
-        
-        // Add visual feedback with smooth transition
-        clothingDescription.style.transition = 'all 0.3s ease';
-        clothingDescription.style.borderColor = '#4ade80';
-        clothingDescription.style.backgroundColor = 'rgba(74, 222, 128, 0.1)';
-        
-        setTimeout(() => {
-            clothingDescription.style.borderColor = '';
-            clothingDescription.style.backgroundColor = '';
-        }, 2000);
-        
-        // Scroll to form for better UX
-        clothingDescription.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-        });
-        
-        // Add ripple effect to clicked template card
-        event.target.closest('.template-card').style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            event.target.closest('.template-card').style.transform = '';
-        }, 150);
-    }
-}
-
-// Simple form submission with direct progress display
-const uploadForm = document.getElementById('uploadForm');
-if (uploadForm) {
-    uploadForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitBtn');
-        const progressContainer = document.getElementById('progressContainer');
-        const uploadContainer = document.querySelector('.upload-form-container');
-        const formData = new FormData(this);
-        
-        // Show loading state
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
-        
-        // Hide form and show progress immediately
-        uploadContainer.style.display = 'none';
-        progressContainer.style.display = 'block';
-        
-        // Start upload and monitoring
-        startSimpleUpload(formData);
-    });
-}
-
-// Simple upload with result monitoring
-function startSimpleUpload(formData) {
-    fetch("{% url 'upload_async' %}", {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Store result ID and start monitoring
-            localStorage.setItem('pendingResultId', data.result_id);
-            monitorSimpleProgress(data.result_id);
-        } else {
-            showSimpleError(data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Upload failed:', error);
-        showSimpleError('Upload failed. Please try again.');
-    });
-}
-
-// Simple progress monitoring - just check completion
-function monitorSimpleProgress(resultId) {
-    const progressMessage = document.getElementById('progressMessage');
-    
-    // Update message
-    progressMessage.textContent = 'Your AI-powered try-on is being generated...';
-    
-    let pollCount = 0;
-    const maxPolls = 150; // 5 minutes max (150 * 2 seconds)
-    
-    // Simple polling to check when processing is complete
-    const checkInterval = setInterval(() => {
-        pollCount++;
-        
-        // Safety timeout after 5 minutes
-        if (pollCount > maxPolls) {
-            clearInterval(checkInterval);
-            progressMessage.innerHTML = `
-                Processing is taking longer than expected. 
-                <br><br>
-                <button onclick="window.location.href='/result/${resultId}/'" 
-                        style="background: var(--gradient-primary); border: none; padding: 10px 20px; border-radius: 8px; color: white; cursor: pointer; margin-top: 10px;">
-                    Check Result Page
-                </button>
-            `;
-            return;
-        }
-        fetch(`/result/${resultId}/`, {
-            method: 'GET',
-            headers: {'X-Requested-With': 'XMLHttpRequest'}
-        })
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            
-            // Check multiple indicators of completion
-            const statusBadge = doc.querySelector('.badge');
-            const resultImage = doc.querySelector('img[alt*="Try-on result"]');
-            const downloadButton = doc.querySelector('a[download]');
-            
-            console.log('Status check - Badge:', statusBadge ? statusBadge.textContent.trim() : 'none');
-            console.log('Status check - Has result image:', !!resultImage);
-            console.log('Status check - Has download button:', !!downloadButton);
-            
-            let isCompleted = false;
-            let isFailed = false;
-            
-            if (statusBadge) {
-                const statusText = statusBadge.textContent.trim();
-                const hasSuccessClass = statusBadge.classList.contains('bg-success');
-                
-                if (statusText.includes('Success') || statusText.includes('Completed') || hasSuccessClass) {
-                    isCompleted = true;
-                } else if (statusText.includes('Failed') || statusBadge.classList.contains('bg-danger')) {
-                    isFailed = true;
-                }
-            }
-            
-            // Additional check: if there's a result image and download button, it's completed
-            if (resultImage && downloadButton) {
-                isCompleted = true;
-            }
-            
-            if (isCompleted) {
-                // Processing completed
-                console.log('✅ Processing completed! Redirecting...');
-                clearInterval(checkInterval);
-                localStorage.removeItem('pendingResultId');
-                
-                // Update message and redirect directly
-                progressMessage.textContent = 'Generation complete! Redirecting...';
-                progressMessage.style.color = '#4ade80'; // Green color
-                
-                setTimeout(() => {
-                    console.log('🚀 Redirecting to:', `/result/${resultId}/`);
-                    // Multiple redirect attempts for reliability
-                    try {
-                        window.location.replace(`/result/${resultId}/`);
-                    } catch (e1) {
-                        try {
-                            window.location.href = `/result/${resultId}/`;
-                        } catch (e2) {
-                            // Force navigation as last resort
-                            window.location = `/result/${resultId}/`;
-                        }
-                    }
-                }, 300);
-                
-            } else if (isFailed) {
-                // Processing failed
-                console.log('❌ Processing failed');
-                clearInterval(checkInterval);
-                localStorage.removeItem('pendingResultId');
-                showSimpleError('Processing failed. Please try again.');
-            } else {
-                console.log('⏳ Still processing...');
-            }
-        })
-        .catch(error => {
-            console.error('Error checking result:', error);
-        });
-    }, 2000); // Check every 2 seconds for faster detection
-}
-
-// Simple error display
-function showSimpleError(message) {
-    const progressMessage = document.getElementById('progressMessage');
-    if (progressMessage) {
-        progressMessage.textContent = `Error: ${message}`;
-        progressMessage.style.color = '#ff6b6b';
-    }
-    
-    // Show retry option after error
-    setTimeout(() => {
-        const progressContainer = document.getElementById('progressContainer');
-        const uploadContainer = document.querySelector('.upload-form-container');
-        
-        if (progressContainer && uploadContainer) {
-            progressContainer.style.display = 'none';
-            uploadContainer.style.display = 'block';
-            
-            // Reset form
-            const submitBtn = document.getElementById('submitBtn');
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="bi bi-magic me-2"></i>Generate Virtual Try-On';
-            }
-        }
-    }, 3000);
-}
-
-// Check for pending results - show progress if processing
-const pendingResultId = localStorage.getItem('pendingResultId');
-console.log('📋 Pending result check:', pendingResultId || 'none');
-
-if (pendingResultId) {
-    console.log('🔍 Found pending result ID:', pendingResultId);
-    
-    // Check if result is completed or still processing
-    fetch(`/result/${pendingResultId}/`, {
-        method: 'GET',
-        headers: {'X-Requested-With': 'XMLHttpRequest'}
-    })
-    .then(response => response.text())
-    .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        
-        // Check completion indicators
-        const statusBadge = doc.querySelector('.badge');
-        const resultImage = doc.querySelector('img[alt*="Try-on result"]');
-        const downloadButton = doc.querySelector('a[download]');
-        
-        let isCompleted = false;
-        let isFailed = false;
-        let isProcessing = false;
-        
-        if (statusBadge) {
-            const statusText = statusBadge.textContent.trim();
-            console.log('Pending check - Status:', statusText);
-            
-            if (statusText.includes('Success') || statusText.includes('Completed') || statusBadge.classList.contains('bg-success')) {
-                isCompleted = true;
-            } else if (statusText.includes('Failed') || statusBadge.classList.contains('bg-danger')) {
-                isFailed = true;
-            } else if (statusText.includes('Processing') || statusBadge.classList.contains('bg-warning')) {
-                isProcessing = true;
-            }
-        }
-        
-        // Additional completion check
-        if (resultImage && downloadButton) {
-            isCompleted = true;
-        }
-        
-        if (isCompleted) {
-            // Processing completed, redirect immediately
-            localStorage.removeItem('pendingResultId');
-            console.log('Found completed result, redirecting...');
-            
-            // Multiple redirect attempts for reliability
-            try {
-                window.location.replace(`/result/${pendingResultId}/`);
-            } catch (e1) {
-                try {
-                    window.location.href = `/result/${pendingResultId}/`;
-                } catch (e2) {
-                    // Force navigation as last resort
-                    window.location = `/result/${pendingResultId}/`;
-                }
-            }
-            
-        } else if (isProcessing) {
-            // Still processing, show progress bar
-            console.log('Found processing result, showing progress...');
-            document.querySelector('.upload-form-container').style.display = 'none';
-            document.getElementById('progressContainer').style.display = 'block';
-            monitorSimpleProgress(pendingResultId);
-            
-        } else if (isFailed) {
-            // Processing failed, clear and show form
-            localStorage.removeItem('pendingResultId');
-            console.log('Found failed result, clearing...');
-        }
-    })
-    .catch(error => {
-        console.error('Error checking pending result:', error);
-        localStorage.removeItem('pendingResultId');
-    });
-}
-
-// File upload interactions
-const fileUpload = document.getElementById('imageUpload');
-const fileWrapper = document.querySelector('.file-upload-wrapper');
-const filePlaceholder = document.querySelector('.file-upload-placeholder');
-
-if (fileUpload && fileWrapper && filePlaceholder) {
-    fileUpload.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            filePlaceholder.innerHTML = `
-                <i class="bi bi-check-circle-fill" style="font-size: 3rem; color: #4ade80; margin-bottom: 1rem; display: block;"></i>
-                <span style="color: var(--text-primary); font-size: 1.2rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">${file.name}</span>
-                <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">Ready to upload</p>
-            `;
-            fileWrapper.style.borderColor = '#4ade80';
-            fileWrapper.style.background = 'rgba(74, 222, 128, 0.1)';
-        }
-    });
-
-    // Drag and drop functionality
-    fileWrapper.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.style.borderColor = 'var(--accent-primary)';
-        this.style.background = 'var(--glass-primary)';
-        this.style.transform = 'scale(1.02)';
-    });
-
-    fileWrapper.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        this.style.borderColor = 'var(--glass-border-secondary)';
-        this.style.background = 'var(--glass-secondary)';
-        this.style.transform = 'scale(1)';
-    });
-
-    fileWrapper.addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.style.borderColor = 'var(--glass-border-secondary)';
-        this.style.background = 'var(--glass-secondary)';
-        this.style.transform = 'scale(1)';
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            fileUpload.files = files;
-            fileUpload.dispatchEvent(new Event('change'));
-        }
-    });
-}
-</script>
+<script src="/static/js/generate-page.js"></script>
+{% endblock %}
 
 <style>
+/* Hero Section Floating Elements */
+.floating-fashion-elements {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.floating-element {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 2.5rem;
+    animation: float 6s ease-in-out infinite;
+}
+
+.floating-element:nth-child(1) { top: 10%; left: 10%; }
+.floating-element:nth-child(2) { top: 20%; right: 15%; }
+.floating-element:nth-child(3) { top: 30%; left: 25%; }
+.floating-element:nth-child(4) { top: 40%; right: 10%; }
+.floating-element:nth-child(5) { top: 50%; left: 15%; }
+.floating-element:nth-child(6) { top: 60%; right: 20%; }
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
 /* Template Cards Styles */
 .template-card {
     background: var(--glass-secondary);
@@ -786,4 +446,3 @@ if (fileUpload && fileWrapper && filePlaceholder) {
     box-shadow: var(--shadow-xl), var(--glow-primary);
 }
 </style>
-{% endblock %}
