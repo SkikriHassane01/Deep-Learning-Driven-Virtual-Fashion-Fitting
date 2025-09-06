@@ -3,21 +3,21 @@
 {% block title %}Login - Virtual Fashion Try-On{% endblock %}
 
 {% block content %}
-<!-- Login Section -->
-<section class="try-on-section">
+<!-- Clean Login Section -->
+<section class="auth-page-section">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8">
-                <div class="upload-card">
-                    <div class="upload-card-header">
-                        <h3 class="upload-title">
+                <div class="auth-page-container">
+                    <div class="text-center mb-4">
+                        <h3 class="auth-page-title">
                             <i class="bi bi-person me-3"></i>
                             Welcome Back
                         </h3>
-                        <p class="upload-subtitle">Sign in to your fashion account</p>
+                        <p class="auth-page-subtitle">Sign in to your fashion account</p>
                     </div>
                     
-                    <div class="upload-card-body">
+                    <div class="auth-form-container">
                         <form method="post">
                             {% csrf_token %}
                             
@@ -57,20 +57,18 @@
                             {% endif %}
                             
                             <!-- Submit Button -->
-                            <div class="submit-wrapper">
-                                <button type="submit" class="btn-generate">
-                                    <span class="btn-content">
-                                        <i class="bi bi-box-arrow-in-right me-2"></i>
-                                        Sign In
-                                    </span>
+                            <div class="submit-wrapper text-center">
+                                <button type="submit" class="btn-auth btn-primary">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Sign In
                                 </button>
                             </div>
                             
                             <!-- Register Link -->
                             <div class="text-center mt-3">
-                                <p class="mb-0" style="color: var(--text-secondary);">
+                                <p class="mb-0 auth-link-text">
                                     Don't have an account? 
-                                    <a href="{% url 'register' %}" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;">
+                                    <a href="{% url 'register' %}" class="auth-link">
                                         Create one here
                                     </a>
                                 </p>

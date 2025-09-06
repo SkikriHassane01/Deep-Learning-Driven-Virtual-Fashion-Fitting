@@ -11,8 +11,9 @@ urlpatterns = [
     # Main app URLs
     path('', views.index_view, name='index'),
     path('upload/', views.upload_view, name='upload'),
+    path('upload-async/', views.upload_async, name='upload_async'),
+    path('progress/<int:result_id>/', views.progress_stream, name='progress_stream'),
     path('result/<int:result_id>/', views.result_view, name='result'),
-    path('gallery/', views.gallery_view, name='gallery'),
     
     # Authentication URLs
     path('register/', views.register_view, name='register'),

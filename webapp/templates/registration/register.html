@@ -3,21 +3,21 @@
 {% block title %}Register - Virtual Fashion Try-On{% endblock %}
 
 {% block content %}
-<!-- Registration Section -->
-<section class="try-on-section">
+<!-- Clean Registration Section -->
+<section class="auth-page-section">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8">
-                <div class="upload-card">
-                    <div class="upload-card-header">
-                        <h3 class="upload-title">
+                <div class="auth-page-container">
+                    <div class="text-center mb-4">
+                        <h3 class="auth-page-title">
                             <i class="bi bi-person-plus me-3"></i>
                             Create Account
                         </h3>
-                        <p class="upload-subtitle">Join our virtual fashion community</p>
+                        <p class="auth-page-subtitle">Join our virtual fashion community</p>
                     </div>
                     
-                    <div class="upload-card-body">
+                    <div class="auth-form-container">
                         <form method="post">
                             {% csrf_token %}
                             
@@ -73,20 +73,18 @@
                             </div>
                             
                             <!-- Submit Button -->
-                            <div class="submit-wrapper">
-                                <button type="submit" class="btn-generate">
-                                    <span class="btn-content">
-                                        <i class="bi bi-person-plus me-2"></i>
-                                        Create Account
-                                    </span>
+                            <div class="submit-wrapper text-center">
+                                <button type="submit" class="btn-auth btn-primary">
+                                    <i class="bi bi-person-plus me-2"></i>
+                                    Create Account
                                 </button>
                             </div>
                             
                             <!-- Login Link -->
                             <div class="text-center mt-3">
-                                <p class="mb-0" style="color: var(--text-secondary);">
+                                <p class="mb-0 auth-link-text">
                                     Already have an account? 
-                                    <a href="{% url 'login' %}" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;">
+                                    <a href="{% url 'login' %}" class="auth-link">
                                         Log in here
                                     </a>
                                 </p>

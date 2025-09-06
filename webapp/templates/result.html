@@ -134,17 +134,58 @@
     </div>
 </section>
 
-<!-- Auto-refresh for processing status -->
+<!-- Smart refresh for processing status -->
 {% if result.processing_status == 'processing' %}
 <script>
-// Auto-refresh every 5 seconds if still processing with smooth transition
-setTimeout(function() {
-    document.body.style.opacity = '0.7';
-    document.body.style.transform = 'translateY(10px)';
-    setTimeout(() => {
-        location.reload();
-    }, 300);
-}, 5000);
+// Smart refresh that checks status periodically without full page reload
+let checkCount = 0;
+const maxChecks = 60; // Maximum 5 minutes (60 * 5s = 5 min)
+
+function checkProcessingStatus() {
+    if (checkCount >= maxChecks) {
+        // After 5 minutes, fall back to manual refresh button
+        return;
+    }
+    
+    checkCount++;
+    
+    // Use fetch to check status without full page reload
+    fetch(window.location.href, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        // Parse the response to check if status has changed
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const statusBadge = doc.querySelector('.badge');
+        
+        if (statusBadge && !statusBadge.textContent.includes('Processing')) {
+            // Status changed - do a full reload to show results
+            document.body.style.opacity = '0.8';
+            document.body.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        } else {
+            // Still processing - check again in 5 seconds
+            setTimeout(checkProcessingStatus, 5000);
+        }
+    })
+    .catch(error => {
+        console.error('Status check failed:', error);
+        // If check fails, fall back to full reload after delay
+        setTimeout(() => {
+            location.reload();
+        }, 10000);
+    });
+}
+
+// Start checking after 5 seconds
+setTimeout(checkProcessingStatus, 5000);
 </script>
 {% endif %}
 {% endblock %}

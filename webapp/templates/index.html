@@ -23,10 +23,12 @@
                             <i class="bi bi-magic me-2"></i>
                             Try On Now
                         </a>
-                        <a href="{% url 'gallery' %}" class="btn btn-outline-primary btn-lg">
-                            <i class="bi bi-images me-2"></i>
-                            View Gallery
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'profile' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-person-circle me-2"></i>
+                            View Profile
                         </a>
+                        {% endif %}
                     </div>
                     
                     {% if not ai_available %}
@@ -38,19 +40,27 @@
                 </div>
             </div>
             
-            <!-- Hero Image Column -->
+            <!-- Professional Business Model Column -->
             <div class="col-lg-6 col-md-5 d-none d-md-block">
                 <div class="hero-image-container">
                     <div class="hero-image-wrapper">
-                        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3" 
-                             alt="Fashion Model" 
+                        <img src="/static/images/hero-man.png" 
+                             alt="Handsome Young Man" 
                              class="hero-image">
                         <div class="hero-image-overlay"></div>
                         <div class="floating-elements">
-                            <div class="floating-dot dot-1"></div>
-                            <div class="floating-dot dot-2"></div>
-                            <div class="floating-dot dot-3"></div>
-                            <div class="floating-dot dot-4"></div>
+                            <div class="floating-dot dot-1">
+                                <i class="bi bi-magic"></i>
+                            </div>
+                            <div class="floating-dot dot-2">
+                                <i class="bi bi-palette"></i>
+                            </div>
+                            <div class="floating-dot dot-3">
+                                <i class="bi bi-stars"></i>
+                            </div>
+                            <div class="floating-dot dot-4">
+                                <i class="bi bi-brush"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -111,141 +121,133 @@
 </section>
 
 
-<!-- Enhanced Try On Section -->
+<!-- Clean Try On Section -->
 <section class="try-on-section section" id="try-on-section">
     <div class="container">
+        <!-- Section Title -->
+        <div class="text-center mb-5">
+            <h2 class="section-title">
+                <i class="bi bi-magic me-3"></i>
+                Try On New Outfit
+            </h2>
+            <p class="section-subtitle">Ready to see how you look in your dream outfit?</p>
+        </div>
+        
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 {% if user.is_authenticated %}
-                    <!-- Enhanced Progress Visualization (Hidden Initially) -->
-                    <div class="glass-progress-container" id="progressContainer" style="display: none;">
-                        <div class="progress-circle" id="progressCircle">
-                            <div class="progress-percentage" id="progressPercentage">0%</div>
-                        </div>
-                        <h5 class="mb-3" style="color: white;">
-                            <i class="bi bi-magic me-2 pulse"></i>
-                            <span id="progressTitle">Processing Your Virtual Try-On...</span>
-                        </h5>
-                        <div class="glass-progress">
-                            <div class="glass-progress-bar" id="progressBar" style="width: 0%"></div>
-                        </div>
-                        <p class="progress-text mt-3" id="progressText" style="color: rgba(255, 255, 255, 0.9);">Initializing AI pipeline...</p>
-                        
-                        <div class="progress-steps mt-4">
-                            <div class="progress-step" id="step1">
-                                <h6 style="color: white; margin-bottom: 0.5rem;">1. Image Analysis</h6>
-                                <small style="color: rgba(255, 255, 255, 0.7);">Processing your photo</small>
+                    <!-- Simple Clean Progress Display -->
+                    <div class="simple-progress-container" id="progressContainer" style="display: none;">
+                        <div class="progress-content">
+                            <div class="progress-icon">
+                                <i class="bi bi-magic"></i>
                             </div>
-                            <div class="progress-step" id="step2">
-                                <h6 style="color: white; margin-bottom: 0.5rem;">2. Body Parsing</h6>
-                                <small style="color: rgba(255, 255, 255, 0.7);">Detecting body regions</small>
+                            <h3 class="progress-title">Generating Your Virtual Try-On</h3>
+                            <p class="progress-subtitle">Please wait while our AI creates your personalized result...</p>
+                            
+                            <div class="simple-progress-bar">
+                                <div class="progress-bar-fill"></div>
                             </div>
-                            <div class="progress-step" id="step3">
-                                <h6 style="color: white; margin-bottom: 0.5rem;">3. AI Generation</h6>
-                                <small style="color: rgba(255, 255, 255, 0.7);">Creating your try-on</small>
-                            </div>
+                            
+                            <p class="progress-message" id="progressMessage">Processing in progress...</p>
                         </div>
                     </div>
 
-                    <!-- Enhanced Upload Form with Glass Styling -->
-                    <div class="upload-card glass-card glass-card-lg" style="border: 1px solid var(--glass-border-primary);">
-                        <div class="upload-card-header" style="background: var(--glass-gradient-primary); backdrop-filter: blur(16px);">
-                            <h3 class="upload-title">
-                                <i class="bi bi-magic me-3"></i>
-                                Try On New Outfit
-                            </h3>
-                            <p class="upload-subtitle">Ready to see how you look in your dream outfit?</p>
-                        </div>
-                    
-                    <div class="upload-card-body">
+                    <!-- Clean Upload Form -->
+                    <div class="upload-form-container">
                         <form method="post" action="{% url 'upload' %}" enctype="multipart/form-data" id="uploadForm">
                             {% csrf_token %}
                             
-                            <!-- Enhanced Image Upload -->
-                            <div class="form-group">
-                                <label for="image" class="form-label" style="color: white;">
+                            <!-- Clean Image Upload -->
+                            <div class="form-group mb-4">
+                                <label for="image" class="form-label">
                                     <i class="bi bi-camera me-2"></i>
                                     Upload Your Photo
                                 </label>
-                                <div class="file-upload-wrapper glass-base" style="background: var(--glass-secondary); border: 2px dashed var(--glass-border-secondary);">
+                                <div class="file-upload-wrapper">
                                     <input type="file" class="form-control file-input" id="image" name="image" 
                                            accept="image/*" required>
                                     <div class="file-upload-placeholder">
-                                        <i class="bi bi-cloud-upload-fill" style="color: var(--accent-primary); font-size: 3rem; margin-bottom: 1rem;"></i>
-                                        <span style="color: white; font-size: 1.1rem; font-weight: 500;">Choose a photo or drag and drop</span>
-                                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-top: 0.5rem;">Or click to browse files</p>
+                                        <i class="bi bi-cloud-upload-fill"></i>
+                                        <span>Choose a photo or drag and drop</span>
+                                        <p>Or click to browse files</p>
                                     </div>
                                 </div>
-                                <div class="form-text" style="color: rgba(255, 255, 255, 0.7);">
+                                <div class="form-text">
                                     📁 Supported formats: JPG, PNG, GIF. For best results, use a clear photo with good lighting.
                                 </div>
                             </div>
                             
-                            <!-- Style Templates Section -->
-                            <div class="style-templates">
-                                <label class="form-label" style="color: white;">
+                            <!-- Simple Style Templates Grid -->
+                            <div class="style-templates mb-4">
+                                <label class="form-label">
                                     <i class="bi bi-palette me-2"></i>
                                     Quick Style Templates
                                 </label>
                                 <div class="templates-grid">
                                     <div class="template-card" onclick="useTemplate('elegant red evening dress with flowing fabric and sophisticated silhouette, perfect for formal events')">
-                                        <div class="template-icon">
-                                            <i class="bi bi-gem"></i>
-                                        </div>
-                                        <h6 class="template-title">Elegant Dress</h6>
-                                        <p class="template-description">Sophisticated formal evening wear</p>
+                                        <i class="bi bi-gem"></i>
+                                        <span>Elegant Dress</span>
                                     </div>
+                                    
                                     <div class="template-card" onclick="useTemplate('comfortable blue jeans with white cotton t-shirt for everyday style, casual and relaxed fit')">
-                                        <div class="template-icon" style="background: var(--glass-gradient-accent);">
-                                            <i class="bi bi-person-casual"></i>
-                                        </div>
-                                        <h6 class="template-title">Casual Wear</h6>
-                                        <p class="template-description">Comfortable everyday style</p>
+                                        <i class="bi bi-person-casual"></i>
+                                        <span>Casual Wear</span>
                                     </div>
+                                    
                                     <div class="template-card" onclick="useTemplate('professional black business suit with crisp white shirt and tie, corporate executive style')">
-                                        <div class="template-icon" style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%);">
-                                            <i class="bi bi-briefcase"></i>
-                                        </div>
-                                        <h6 class="template-title">Business</h6>
-                                        <p class="template-description">Professional corporate attire</p>
+                                        <i class="bi bi-briefcase"></i>
+                                        <span>Business Suit</span>
                                     </div>
+                                    
                                     <div class="template-card" onclick="useTemplate('trendy summer outfit with floral patterns and light breathable fabrics, vibrant colors')">
-                                        <div class="template-icon" style="background: var(--glass-gradient-tertiary);">
-                                            <i class="bi bi-sun"></i>
-                                        </div>
-                                        <h6 class="template-title">Summer Style</h6>
-                                        <p class="template-description">Light & breezy seasonal wear</p>
+                                        <i class="bi bi-sun"></i>
+                                        <span>Summer Style</span>
+                                    </div>
+                                    
+                                    <div class="template-card" onclick="useTemplate('stylish winter coat with warm layers and fashionable accessories, cozy and chic')">
+                                        <i class="bi bi-snow"></i>
+                                        <span>Winter Coat</span>
+                                    </div>
+                                    
+                                    <div class="template-card" onclick="useTemplate('athletic wear with moisture-wicking fabric and comfortable fit for active lifestyle')">
+                                        <i class="bi bi-lightning"></i>
+                                        <span>Athletic Wear</span>
+                                    </div>
+                                    
+                                    <div class="template-card" onclick="useTemplate('vintage retro outfit with classic denim jacket and timeless style elements')">
+                                        <i class="bi bi-clock-history"></i>
+                                        <span>Vintage Style</span>
+                                    </div>
+                                    
+                                    <div class="template-card" onclick="useTemplate('party outfit with sequins and glamorous evening wear perfect for special occasions')">
+                                        <i class="bi bi-stars"></i>
+                                        <span>Party Outfit</span>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- Enhanced Text Description -->
-                            <div class="form-group">
-                                <label for="prompt" class="form-label" style="color: white;">
+                            <!-- Clean Text Description -->
+                            <div class="form-group mb-4">
+                                <label for="prompt" class="form-label">
                                     <i class="bi bi-chat-text me-2"></i>
                                     Describe Your Desired Clothing
                                 </label>
-                                <textarea class="glass-input" id="prompt" name="prompt" rows="4" 
+                                <textarea class="form-control" id="prompt" name="prompt" rows="4" 
                                           placeholder="Describe your dream outfit... (e.g., elegant red evening dress, casual blue jeans with white t-shirt, formal black suit with tie)"
-                                          required maxlength="500" style="resize: vertical;"></textarea>
-                                <div class="form-text" style="color: rgba(255, 255, 255, 0.7);">
+                                          required maxlength="500"></textarea>
+                                <div class="form-text">
                                     💡 Be specific about colors, style, and type of clothing for the most accurate results.
                                 </div>
                             </div>
                             
-                            <!-- Enhanced Submit Button -->
+                            <!-- Clean Submit Button -->
                             <div class="submit-wrapper text-center">
-                                <button type="submit" class="glass-btn glass-btn-primary" id="submitBtn" style="min-width: 280px; font-size: 1.2rem; padding: 1rem 2rem;">
-                                    <span class="btn-content">
-                                        <i class="bi bi-magic me-2"></i>
-                                        Generate Virtual Try-On
-                                    </span>
-                                    <span class="btn-loading d-none">
-                                        <span class="spinner-border spinner-border-sm me-2"></span>
-                                        Processing Magic...
-                                    </span>
+                                <button type="submit" class="btn-generate" id="submitBtn">
+                                    <i class="bi bi-magic me-2"></i>
+                                    Generate Virtual Try-On
                                 </button>
-                                <p class="mt-3" style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
+                                <p class="mt-3 submit-note">
                                     ✨ Your transformation will be ready in ~2-3 minutes
                                 </p>
                             </div>
@@ -253,47 +255,47 @@
                     </div>
                 </div>
                 {% else %}
-                    <!-- Enhanced Authentication Required -->
-                    <div class="upload-card glass-card glass-card-lg" style="border: 1px solid var(--glass-border-primary);">
-                        <div class="upload-card-header" style="background: var(--glass-gradient-primary); backdrop-filter: blur(16px);">
-                            <h3 class="upload-title">
+                    <!-- Clean Authentication Required -->
+                    <div class="auth-required-container">
+                        <div class="text-center mb-5">
+                            <h3 class="auth-title">
                                 <i class="bi bi-person-lock me-3"></i>
                                 Ready to Transform Your Style?
                             </h3>
-                            <p class="upload-subtitle">Sign in or create an account to access our AI-powered virtual try-on experience</p>
+                            <p class="auth-subtitle">Sign in or create an account to access our AI-powered virtual try-on experience</p>
                         </div>
                         
-                        <div class="upload-card-body text-center">
-                            <div class="row g-4">
+                        <div class="auth-options text-center">
+                            <div class="row g-4 mb-4">
                                 <div class="col-md-6">
-                                    <div class="auth-feature glass-card-sm">
-                                        <i class="bi bi-upload" style="font-size: 2.5rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
-                                        <h5 style="color: white;">Upload Your Photo</h5>
-                                        <p style="color: rgba(255, 255, 255, 0.8);">Upload your images securely to your personal account</p>
+                                    <div class="auth-feature">
+                                        <i class="bi bi-upload"></i>
+                                        <h5>Upload Your Photo</h5>
+                                        <p>Upload your images securely to your personal account</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="auth-feature glass-card-sm">
-                                        <i class="bi bi-clock-history" style="font-size: 2.5rem; color: var(--accent-secondary); margin-bottom: 1rem;"></i>
-                                        <h5 style="color: white;">Save Your Try-Ons</h5>
-                                        <p style="color: rgba(255, 255, 255, 0.8);">Access your virtual try-on history anytime from your profile</p>
+                                    <div class="auth-feature">
+                                        <i class="bi bi-clock-history"></i>
+                                        <h5>Save Your Try-Ons</h5>
+                                        <p>Access your virtual try-on history anytime from your profile</p>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="auth-actions mt-4">
-                                <a href="{% url 'register' %}" class="glass-btn glass-btn-primary me-3">
+                            <div class="auth-actions">
+                                <a href="{% url 'register' %}" class="btn-auth btn-primary me-3">
                                     <i class="bi bi-person-plus me-2"></i>
                                     Create Account
                                 </a>
-                                <a href="{% url 'login' %}" class="glass-btn glass-btn-outline">
+                                <a href="{% url 'login' %}" class="btn-auth btn-secondary">
                                     <i class="bi bi-box-arrow-in-right me-2"></i>
                                     Sign In
                                 </a>
                             </div>
                             
                             <div class="mt-4">
-                                <div class="glass-badge">
+                                <div class="privacy-note">
                                     <i class="bi bi-shield-check me-2"></i>
                                     Your privacy is protected. We never share your photos.
                                 </div>
@@ -449,137 +451,408 @@ function useTemplate(templateText) {
 }
 
 
-// Enhanced form submission with glassmorphism progress
+// Simple form submission with direct progress display
 const uploadForm = document.getElementById('uploadForm');
 if (uploadForm) {
-    uploadForm.addEventListener('submit', function() {
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
         const submitBtn = document.getElementById('submitBtn');
-        const btnContent = submitBtn.querySelector('.btn-content');
-        const btnLoading = submitBtn.querySelector('.btn-loading');
         const progressContainer = document.getElementById('progressContainer');
+        const uploadContainer = document.querySelector('.upload-form-container');
+        const formData = new FormData(this);
         
         // Show loading state
         submitBtn.disabled = true;
-        btnContent.classList.add('d-none');
-        btnLoading.classList.remove('d-none');
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
         
-        // Show enhanced progress container
-        setTimeout(() => {
-            this.closest('.upload-card').style.display = 'none';
-            progressContainer.style.display = 'block';
-            simulateEnhancedProgress();
-        }, 100);
+        // Hide form and show progress immediately
+        uploadContainer.style.display = 'none';
+        progressContainer.style.display = 'block';
+        
+        // Start upload and monitoring
+        startSimpleUpload(formData);
     });
 }
 
-// Enhanced Progress Simulation with Glass Effects
-function simulateEnhancedProgress() {
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
-    const progressCircle = document.getElementById('progressCircle');
-    const progressPercentage = document.getElementById('progressPercentage');
-    const step1 = document.getElementById('step1');
-    const step2 = document.getElementById('step2');
-    const step3 = document.getElementById('step3');
-    
-    let currentProgress = 0;
-    const totalSteps = 100;
-    
-    // Processing phases
-    const phases = [
-        { 
-            progress: 25, 
-            text: 'Analyzing your photo with AI vision...', 
-            duration: 3000,
-            step: step1
-        },
-        { 
-            progress: 60, 
-            text: 'Parsing body regions and clothing areas...', 
-            duration: 4000,
-            step: step2
-        },
-        { 
-            progress: 95, 
-            text: 'Generating your virtual try-on...', 
-            duration: 8000,
-            step: step3
-        },
-        { 
-            progress: 100, 
-            text: 'Finalizing your transformation!', 
-            duration: 2000,
-            step: null
+// Simple upload with result monitoring
+function startSimpleUpload(formData) {
+    fetch("{% url 'upload_async' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
         }
-    ];
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Store result ID and start monitoring
+            localStorage.setItem('pendingResultId', data.result_id);
+            monitorSimpleProgress(data.result_id);
+        } else {
+            showSimpleError(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Upload failed:', error);
+        showSimpleError('Upload failed. Please try again.');
+    });
+}
+
+// Simple progress monitoring - just check completion
+function monitorSimpleProgress(resultId) {
+    const progressMessage = document.getElementById('progressMessage');
     
-    let phaseIndex = 0;
+    // Update message
+    progressMessage.textContent = 'Your AI-powered try-on is being generated...';
     
-    function executePhase() {
-        if (phaseIndex < phases.length) {
-            const phase = phases[phaseIndex];
+    // Simple polling to check when processing is complete
+    const checkInterval = setInterval(() => {
+        fetch(`/result/${resultId}/`, {
+            method: 'GET',
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const statusBadge = doc.querySelector('.badge');
             
-            // Update text
-            progressText.textContent = phase.text;
-            
-            // Activate current step
-            if (phase.step) {
-                phase.step.classList.add('active');
-                // Mark previous steps as completed
-                phases.slice(0, phaseIndex).forEach(prevPhase => {
-                    if (prevPhase.step) {
-                        prevPhase.step.classList.remove('active');
-                        prevPhase.step.classList.add('completed');
-                    }
-                });
-            }
-            
-            // Animate progress
-            const targetProgress = phase.progress;
-            const progressDiff = targetProgress - currentProgress;
-            const progressIncrement = progressDiff / (phase.duration / 100);
-            
-            const progressInterval = setInterval(() => {
-                currentProgress += progressIncrement;
-                if (currentProgress >= targetProgress) {
-                    currentProgress = targetProgress;
-                    clearInterval(progressInterval);
+            if (statusBadge) {
+                const statusText = statusBadge.textContent.trim();
+                
+                if (statusText.includes('Success') || statusText.includes('Completed')) {
+                    // Processing completed
+                    clearInterval(checkInterval);
+                    localStorage.removeItem('pendingResultId');
+                    
+                    // Update message and redirect
+                    progressMessage.textContent = 'Generation complete! Redirecting...';
                     
                     setTimeout(() => {
-                        phaseIndex++;
-                        executePhase();
-                    }, 500);
+                        window.location.reload();
+                        setTimeout(() => {
+                            window.location.href = `/result/${resultId}/`;
+                        }, 100);
+                    }, 1000);
+                    
+                } else if (statusText.includes('Failed')) {
+                    // Processing failed
+                    clearInterval(checkInterval);
+                    localStorage.removeItem('pendingResultId');
+                    showSimpleError('Processing failed. Please try again.');
                 }
-                
-                // Update progress bar
-                progressBar.style.width = currentProgress + '%';
-                
-                // Update progress circle
-                progressPercentage.textContent = Math.round(currentProgress) + '%';
-                const circumference = 2 * Math.PI * 75; // radius = 75
-                const strokeDasharray = `${(currentProgress / 100) * circumference} ${circumference}`;
-                progressCircle.style.background = `conic-gradient(
-                    var(--glass-gradient-secondary) ${currentProgress * 3.6}deg,
-                    var(--glass-secondary) ${currentProgress * 3.6}deg
-                )`;
-                
-            }, 100);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking result:', error);
+        });
+    }, 3000); // Check every 3 seconds
+}
+
+// Simple error display
+function showSimpleError(message) {
+    const progressMessage = document.getElementById('progressMessage');
+    if (progressMessage) {
+        progressMessage.textContent = `Error: ${message}`;
+        progressMessage.style.color = '#ff6b6b';
+    }
+    
+    // Show retry option after error
+    setTimeout(() => {
+        const progressContainer = document.getElementById('progressContainer');
+        const uploadContainer = document.querySelector('.upload-form-container');
+        
+        if (progressContainer && uploadContainer) {
+            progressContainer.style.display = 'none';
+            uploadContainer.style.display = 'block';
             
+            // Reset form
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-magic me-2"></i>Generate Virtual Try-On';
+            }
+        }
+    }, 3000);
+}
+
+function checkSimplePendingResult(resultId) {
+    fetch(`/result/${resultId}/`, {
+        method: 'GET',
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const statusBadge = doc.querySelector('.badge');
+        
+        if (statusBadge) {
+            const statusText = statusBadge.textContent.trim();
+            
+            if (statusText.includes('Success') || statusText.includes('Completed')) {
+                // Processing completed, redirect immediately
+                localStorage.removeItem('pendingResultId');
+                console.log('Found completed result, redirecting...');
+                window.location.href = `/result/${resultId}/`;
+                
+            } else if (statusText.includes('Processing')) {
+                // Still processing, show progress bar
+                console.log('Found processing result, showing progress...');
+                showSimpleProgress(resultId);
+                
+            } else if (statusText.includes('Failed')) {
+                // Processing failed, clear and show form
+                localStorage.removeItem('pendingResultId');
+                ensureFormReady();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking pending result:', error);
+        localStorage.removeItem('pendingResultId');
+        ensureFormReady();
+    });
+}
+
+function showSimpleProgress(resultId) {
+    const progressContainer = document.getElementById('progressContainer');
+    const uploadContainer = document.querySelector('.upload-form-container');
+    
+    if (progressContainer && uploadContainer) {
+        // Show progress, hide form
+        uploadContainer.style.display = 'none';
+        progressContainer.style.display = 'block';
+        
+        // Start monitoring
+        monitorSimpleProgress(resultId);
+    }
+}
+
+function ensureFormReady() {
+    const progressContainer = document.getElementById('progressContainer');
+    const uploadContainer = document.querySelector('.upload-form-container');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (progressContainer && uploadContainer && submitBtn) {
+        // Show form, hide progress
+        progressContainer.style.display = 'none';
+        uploadContainer.style.display = 'block';
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-magic me-2"></i>Generate Virtual Try-On';
+    }
+}
+
+// This function is no longer needed - removed for simplicity
+
+function resetUploadForm() {
+    // Reset the upload form to allow new uploads
+    const uploadForm = document.getElementById('uploadForm');
+    const progressContainer = document.getElementById('progressContainer');
+    const uploadFormContainer = document.querySelector('.upload-form-container');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (uploadForm && progressContainer && uploadFormContainer && submitBtn) {
+        // Hide progress container and show upload form
+        progressContainer.style.display = 'none';
+        uploadFormContainer.style.display = 'block';
+        
+        // Reset form
+        uploadForm.reset();
+        
+        // Reset submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-magic me-2"></i>Generate Virtual Try-On';
+        
+        // Reset file upload display
+        const filePlaceholder = document.querySelector('.file-upload-placeholder');
+        const fileWrapper = document.querySelector('.file-upload-wrapper');
+        
+        if (filePlaceholder && fileWrapper) {
+            filePlaceholder.innerHTML = `
+                <i class="bi bi-cloud-upload-fill"></i>
+                <span>Choose a photo or drag and drop</span>
+                <p>Or click to browse files</p>
+            `;
+            fileWrapper.style.borderColor = 'var(--glass-border-secondary)';
+            fileWrapper.style.background = 'var(--glass-secondary)';
+            fileWrapper.style.transform = 'scale(1)';
+        }
+        
+        // Clear any stored result IDs
+        localStorage.removeItem('pendingResultId');
+        
+        console.log('Upload form reset for new upload');
+    }
+}
+
+// Complex checkResultCompletion function removed - using simple polling instead
+
+// All complex progress functions removed for simple, clean implementation
+
+
+// EternaCloud-Inspired Scroll Animations and Interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for pending results - show progress if processing
+    const pendingResultId = localStorage.getItem('pendingResultId');
+    if (pendingResultId) {
+        console.log('Found pending result ID:', pendingResultId);
+        checkSimplePendingResult(pendingResultId);
+    } else {
+        // No pending results, ensure form is ready
+        console.log('No pending results, form ready');
+        ensureFormReady();
+    }
+    // Navbar scroll behavior
+    const navbar = document.querySelector('.modern-navbar');
+    let lastScrollTop = 0;
+    let scrollTimer = null;
+    
+    function handleNavbarScroll() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > 50) {
+            navbar.classList.add('scrolled');
         } else {
-            // All phases complete
-            setTimeout(() => {
-                progressText.textContent = 'Redirecting to your amazing results!';
-            }, 1000);
+            navbar.classList.remove('scrolled');
+        }
+        
+        // Navbar stays visible - removed hide on scroll behavior
+    }
+    
+    // Enhanced scroll listener with throttling
+    let ticking = false;
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            requestAnimationFrame(function() {
+                handleNavbarScroll();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+    
+    // Parallax effect for hero section
+    const heroSection = document.querySelector('.hero-section');
+    const hero3dPlaceholder = document.querySelector('.hero-3d-placeholder');
+    const floatingDots = document.querySelectorAll('.floating-dot');
+    
+    function handleParallaxEffects() {
+        const scrolled = window.pageYOffset;
+        const heroHeight = heroSection.offsetHeight;
+        const scrollPercent = scrolled / heroHeight;
+        
+        if (scrollPercent < 1) {
+            // 3D model floating effect
+            if (hero3dPlaceholder) {
+                const translateY = scrolled * 0.3;
+                const rotateX = scrollPercent * 10;
+                hero3dPlaceholder.style.transform = `translate(-50%, -50%) translateY(${translateY}px) rotateX(${rotateX}deg)`;
+            }
+            
+            // Enhanced floating dots movement
+            floatingDots.forEach((dot, index) => {
+                const speed = 0.2 + (index * 0.1);
+                const translateY = scrolled * speed;
+                const rotate = scrolled * (0.5 + index * 0.2);
+                dot.style.transform = `translateY(${translateY}px) rotate(${rotate}deg)`;
+            });
         }
     }
     
-    // Start processing
-    executePhase();
-}
-
-
-// Enhanced animations and interactions
-document.addEventListener('DOMContentLoaded', function() {
+    // Throttled parallax scroll listener
+    let parallaxTicking = false;
+    window.addEventListener('scroll', function() {
+        if (!parallaxTicking) {
+            requestAnimationFrame(function() {
+                handleParallaxEffects();
+                parallaxTicking = false;
+            });
+            parallaxTicking = true;
+        }
+    });
+    
+    // Circular templates enhanced interactions
+    const orbitalTemplates = document.querySelectorAll('.orbital-template');
+    const templateOrbit = document.querySelector('.template-orbit');
+    let isHovering = false;
+    
+    orbitalTemplates.forEach((template, index) => {
+        template.addEventListener('mouseenter', function() {
+            isHovering = true;
+            // Pause orbit rotation on hover
+            if (templateOrbit) {
+                templateOrbit.style.animationPlayState = 'paused';
+            }
+            
+            // Add ripple effect
+            const ripple = document.createElement('div');
+            ripple.className = 'template-ripple';
+            ripple.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                background: radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%);
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                animation: ripple-expand 0.6s ease-out;
+                pointer-events: none;
+                z-index: -1;
+            `;
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                if (ripple.parentNode) {
+                    ripple.remove();
+                }
+            }, 600);
+        });
+        
+        template.addEventListener('mouseleave', function() {
+            isHovering = false;
+            // Resume orbit rotation
+            setTimeout(() => {
+                if (!isHovering && templateOrbit) {
+                    templateOrbit.style.animationPlayState = 'running';
+                }
+            }, 100);
+        });
+        
+        template.addEventListener('click', function() {
+            // Enhanced click animation
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+    
+    // Add ripple animation styles
+    if (!document.getElementById('ripple-styles')) {
+        const style = document.createElement('style');
+        style.id = 'ripple-styles';
+        style.textContent = `
+            @keyframes ripple-expand {
+                0% {
+                    width: 0;
+                    height: 0;
+                    opacity: 1;
+                }
+                100% {
+                    width: 200px;
+                    height: 200px;
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
     // Intersection Observer for scroll animations
     const observerOptions = {
         threshold: 0.1,
@@ -1054,6 +1327,112 @@ function tryAnother() {
 </script>
 
 <style>
+/* Simple Clean Progress Bar Styles */
+.simple-progress-container {
+    background: var(--glass-secondary);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border-secondary);
+    border-radius: 24px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+    animation: fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-content {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.progress-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--gradient-primary);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    animation: pulse 2s infinite;
+}
+
+.progress-icon i {
+    font-size: 2.5rem;
+    color: white;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+.progress-title {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 2rem;
+}
+
+.progress-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 2.5rem;
+    font-size: 1.1rem;
+}
+
+.simple-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 2rem 0;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8b5cf6, #a855f7, #c084fc, #e879f9);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: progressFlow 2s linear infinite;
+    width: 100%;
+}
+
+.progress-message {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    margin-top: 1.5rem;
+    animation: fadeInOut 3s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes progressFlow {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);
+    }
+    50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 0 60px rgba(139, 92, 246, 0.6);
+    }
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
 /* Additional micro-interaction styles */
 .ripple {
     position: absolute;

@@ -207,3 +207,10 @@ marimo/_lsp/
 __marimo__/
 model/human_parser_model.pth
 model/model_config.json
+src/outputs/
+model/checkpoints/
+.claude/settings.local.json
+todo.md
+project_creation_step_by_step.md
+CLAUDE.md
+webapp/media/
