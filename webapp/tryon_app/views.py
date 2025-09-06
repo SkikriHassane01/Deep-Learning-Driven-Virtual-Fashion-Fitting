@@ -8,7 +8,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import JsonResponse, StreamingHttpResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.urls import reverse
@@ -16,7 +16,6 @@ from django.utils import timezone
 from datetime import timedelta
 import os
 import json
-import time
 import logging
 from pathlib import Path
 
@@ -44,27 +43,23 @@ def cleanup_stuck_results():
 
 
 def index_view(request):
-    """Home page with upload form"""
-    # Clean up any stuck results before showing the page
-    cleanup_stuck_results()
-    
-    if request.user.is_authenticated:
-        recent_results = TryOnResult.objects.filter(
-            user=request.user, 
-            processing_status='completed',
-            result_image__isnull=False
-        ).exclude(result_image='').order_by('-created_at')[:6]
-    else:
-        recent_results = TryOnResult.objects.filter(
-            processing_status='completed',
-            result_image__isnull=False
-        ).exclude(result_image='').order_by('-created_at')[:6]
-    
+    """Simplified home page without upload functionality"""
     context = {
-        'recent_results': recent_results,
         'ai_available': tryon_service.is_available()
     }
     return render(request, 'index.html', context)
+
+
+@login_required
+def generate_view(request):
+    """AI Virtual Try-On Generation page - login required"""
+    # Clean up any stuck results before showing the page
+    cleanup_stuck_results()
+    
+    context = {
+        'ai_available': tryon_service.is_available()
+    }
+    return render(request, 'generate.html', context)
 
 
 @login_required
@@ -149,90 +144,7 @@ def result_view(request, result_id):
 
 
 
-def progress_stream(request, result_id):
-    """Stream processing progress updates"""
-    def event_stream():
-        # Get the result object
-        try:
-            tryon_result = TryOnResult.objects.get(id=result_id)
-        except TryOnResult.DoesNotExist:
-            yield f"data: {json.dumps({'error': 'Result not found'})}\n\n"
-            return
-        
-        # Progress updates aligned with actual AI processing pipeline
-        steps = [
-            {"progress": 10, "text": "Loading and preprocessing your image...", "duration": 3.0},
-            {"progress": 25, "text": "Running human pose detection...", "duration": 8.0},
-            {"progress": 40, "text": "Segmenting body regions and clothing areas...", "duration": 12.0},
-            {"progress": 55, "text": "Creating garment placement mask...", "duration": 6.0},
-            {"progress": 95, "text": "AI diffusion model generating clothing", "duration": 120.0, "has_substeps": True},  # 2 minutes for 25 steps
-            {"progress": 100, "text": "Post-processing and finalizing result...", "duration": 4.0},
-        ]
-        
-        for i, phase in enumerate(steps):
-            if phase.get('has_substeps'):  # AI generation phase with diffusion steps
-                for diffusion_step in range(1, 26):
-                    progress = 55 + ((diffusion_step / 25) * 40)  # 55% to 95%
-                    step_msg = f"AI diffusion model generating clothing (Step {diffusion_step}/25)..."
-                    data = {
-                        'progress': int(progress),
-                        'step': step_msg,
-                        'status': 'processing',
-                        'phase': i + 1,
-                        'diffusion_step': diffusion_step
-                    }
-                    yield f"data: {json.dumps(data)}\n\n"
-                    time.sleep(phase['duration'] / 25)  # Distribute time across 25 steps
-            else:
-                data = {
-                    'progress': int(phase['progress']),
-                    'step': phase['text'],
-                    'status': 'processing',
-                    'phase': i + 1
-                }
-                yield f"data: {json.dumps(data)}\n\n"
-                time.sleep(phase['duration'])
-        
-        # After simulation, wait for actual processing to complete
-        while True:
-            # Refresh the tryon_result from database
-            tryon_result.refresh_from_db()
-            
-            if tryon_result.processing_status == 'completed':
-                data = {
-                    'progress': 100,
-                    'step': "Processing completed successfully!",
-                    'status': 'completed',
-                    'phase': 6
-                }
-                yield f"data: {json.dumps(data)}\n\n"
-                break
-            elif tryon_result.processing_status == 'failed':
-                data = {
-                    'progress': 100,
-                    'step': f"Processing failed: {tryon_result.error_message}",
-                    'status': 'error',
-                    'error': tryon_result.error_message
-                }
-                yield f"data: {json.dumps(data)}\n\n"
-                break
-            else:
-                # Still processing, wait a bit
-                time.sleep(2)
-                # Update progress text to show we're waiting
-                data = {
-                    'progress': 95,
-                    'step': "Finalizing results, please wait...",
-                    'status': 'processing',
-                    'phase': 6
-                }
-                yield f"data: {json.dumps(data)}\n\n"
-    
-    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
-    response['Cache-Control'] = 'no-cache'
-    response['Connection'] = 'keep-alive'
-    response['X-Accel-Buffering'] = 'no'  # Disable nginx buffering
-    return response
+# progress_stream function removed - now using simple polling in frontend instead
 
 
 @login_required
