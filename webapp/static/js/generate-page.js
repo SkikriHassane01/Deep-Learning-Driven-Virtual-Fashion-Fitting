@@ -286,6 +286,8 @@ function checkPendingResults() {
     const pendingResultId = localStorage.getItem('pendingResultId');
     if (!pendingResultId) return;
 
+    console.log('Checking pending result:', pendingResultId);
+
     // Check if result is completed or still processing
     fetch(`/result/${pendingResultId}/`, {
         method: 'GET',
@@ -296,7 +298,7 @@ function checkPendingResults() {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         
-        const statusBadge = doc.querySelector('.badge');
+        const statusBadge = doc.querySelector('.status-badge');
         const resultImage = doc.querySelector('img[alt*="Try-on result"]');
         const downloadButton = doc.querySelector('a[download]');
         
@@ -304,43 +306,55 @@ function checkPendingResults() {
         let isFailed = false;
         let isProcessing = false;
         
+        // Check status badge with the correct class names
         if (statusBadge) {
             const statusText = statusBadge.textContent.trim();
             
-            if (statusText.includes('Success') || statusText.includes('Completed') || statusBadge.classList.contains('bg-success')) {
+            if (statusText.includes('Completed') || statusBadge.classList.contains('status-completed')) {
                 isCompleted = true;
-            } else if (statusText.includes('Failed') || statusBadge.classList.contains('bg-danger')) {
+            } else if (statusText.includes('Failed') || statusBadge.classList.contains('status-failed')) {
                 isFailed = true;
-            } else if (statusText.includes('Processing') || statusBadge.classList.contains('bg-warning')) {
+            } else if (statusText.includes('Processing') || statusBadge.classList.contains('status-processing')) {
                 isProcessing = true;
             }
         }
         
+        // Additional check for result image and download button
         if (resultImage && downloadButton) {
             isCompleted = true;
         }
         
         if (isCompleted) {
-            // Redirect to completed result
+            // Auto-redirect to completed result
+            console.log('Result completed, redirecting...');
             localStorage.removeItem('pendingResultId');
             window.location.href = `/result/${pendingResultId}/`;
         } else if (isProcessing) {
             // Show progress for processing result
+            console.log('Result still processing, showing progress...');
             const uploadContainer = document.querySelector('.upload-form-container');
             const progressContainer = document.getElementById('progressContainer');
+            const progressMessage = document.getElementById('progressMessage');
             
             if (uploadContainer) uploadContainer.style.display = 'none';
             if (progressContainer) progressContainer.style.display = 'block';
+            if (progressMessage) {
+                progressMessage.innerHTML = 'Resuming progress tracking... <br><small>Your generation is still being processed.</small>';
+            }
             
+            // Continue monitoring from where we left off
             monitorProgress(pendingResultId);
         } else if (isFailed) {
-            // Clear failed result
+            // Clear failed result and allow new generation
+            console.log('Result failed, clearing storage...');
             localStorage.removeItem('pendingResultId');
+            showError('Previous generation failed. You can start a new one.');
         }
     })
     .catch(error => {
         console.error('Error checking pending result:', error);
-        localStorage.removeItem('pendingResultId');
+        // Don't clear storage on network errors, might be temporary
+        console.log('Network error, will retry...');
     });
 }
 

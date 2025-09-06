@@ -67,8 +67,8 @@ def upload_view(request):
     """Handle image upload and text input"""
     if request.method == 'POST':
         # Get form data
-        image_file = request.FILES.get('image')
-        clothing_prompt = request.POST.get('prompt', '').strip()
+        image_file = request.FILES.get('original_image')
+        clothing_prompt = request.POST.get('clothing_prompt', '').strip()
         
         # Simple validation
         if not image_file:
@@ -153,8 +153,8 @@ def upload_async(request):
     """Async upload endpoint for better progress tracking"""
     if request.method == 'POST':
         # Get form data
-        image_file = request.FILES.get('image')
-        clothing_prompt = request.POST.get('prompt', '').strip()
+        image_file = request.FILES.get('original_image')
+        clothing_prompt = request.POST.get('clothing_prompt', '').strip()
         
         # Simple validation
         if not image_file or not clothing_prompt:

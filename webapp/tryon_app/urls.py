@@ -12,7 +12,7 @@ urlpatterns = [
     path('', views.index_view, name='index'),
     path('generate/', views.generate_view, name='generate'),
     path('upload/', views.upload_view, name='upload'),
-    path('upload-async/', views.upload_async, name='upload_async'),
+    path('upload_async/', views.upload_async, name='upload_async'),
     path('result/<int:result_id>/', views.result_view, name='result'),
     
     # Authentication URLs

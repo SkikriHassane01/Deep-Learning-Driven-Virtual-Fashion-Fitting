@@ -2,34 +2,66 @@
 
 {% block title %}AI Virtual Try-On Generator - Virtual Fashion{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/generate.css">
+{% endblock %}
+
 {% block content %}
-<!-- Generation Page Header with Moving Background -->
-<section class="hero-section section" style="padding: 4rem 0 2rem;">
+<!-- Generate Page Hero Section - Fixed -->
+<section class="hero-section section generate-hero" style="padding: 6rem 0 3rem; background: var(--gradient-hero); min-height: 40vh; display: flex; align-items: center; position: relative; overflow: hidden;">
     <div class="floating-fashion-elements">
         <div class="floating-element"><i class="bi bi-stars"></i></div>
         <div class="floating-element"><i class="bi bi-palette"></i></div>
         <div class="floating-element"><i class="bi bi-magic"></i></div>
         <div class="floating-element"><i class="bi bi-brush"></i></div>
-        <div class="floating-element"><i class="bi bi-lightning"></i></div>
-        <div class="floating-element"><i class="bi bi-droplet"></i></div>
+        <div class="floating-element"><i class="bi bi-cloud-upload"></i></div>
+        <div class="floating-element"><i class="bi bi-chat-text"></i></div>
     </div>
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <div class="text-center animate-on-scroll">
-                    <h1 class="hero-title" style="font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 1.5rem;">
-                        AI Virtual Try-On Generator
+                <div class="text-center">
+                    <div class="generate-header-icon mb-4">
+                        <i class="bi bi-magic"></i>
+                    </div>
+                    <h1 class="hero-title" style="font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 1.5rem; color: white; opacity: 1;">
+                        Create Your Virtual Try-On
                     </h1>
-                    <p class="hero-subtitle" style="max-width: 700px; margin: 0 auto 2rem;">
-                        Upload your photo and describe your desired outfit. Our AI will generate a personalized virtual try-on result in seconds.
+                    <p class="hero-subtitle" style="max-width: 700px; margin: 0 auto 3rem; color: rgba(255, 255, 255, 0.9); opacity: 1;">
+                        Transform your style with AI-powered virtual fashion. Upload your photo, describe your desired outfit, 
+                        and watch our advanced technology create realistic try-on results in minutes.
                     </p>
-                    <div class="hero-description" style="max-width: 800px; margin: 0 auto;">
-                        <p style="color: rgba(255, 255, 255, 0.8); font-size: 1rem; margin-bottom: 0.5rem;">
-                            ✨ <strong>How it works:</strong> Upload a clear photo of yourself, describe the clothing you want to try on, and watch our AI create a realistic visualization
-                        </p>
-                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
-                            💡 <em>Tip: Be specific about colors, styles, and clothing types for the best results</em>
-                        </p>
+                    
+                    <!-- Simple Process Overview -->
+                    <div class="overview-steps">
+                        <div class="overview-step">
+                            <div class="step-icon">
+                                <i class="bi bi-cloud-upload"></i>
+                                <span>1</span>
+                            </div>
+                            <p>Upload Photo</p>
+                        </div>
+                        <div class="overview-step">
+                            <div class="step-icon">
+                                <i class="bi bi-palette"></i>
+                                <span>2</span>
+                            </div>
+                            <p>Choose Template</p>
+                        </div>
+                        <div class="overview-step">
+                            <div class="step-icon">
+                                <i class="bi bi-chat-text"></i>
+                                <span>3</span>
+                            </div>
+                            <p>Describe Outfit</p>
+                        </div>
+                        <div class="overview-step">
+                            <div class="step-icon">
+                                <i class="bi bi-magic"></i>
+                                <span>4</span>
+                            </div>
+                            <p>Get Results</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -37,12 +69,13 @@
     </div>
 </section>
 
-<!-- Generation Interface Section - Simplified and Optimized -->
-<section class="try-on-section section section-light" style="padding: 3rem 0 4rem;">
+<!-- Main Generation Interface -->
+<section class="section" style="padding: 3rem 0 4rem; background: transparent;">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <!-- Simple Clean Progress Display -->
+                
+                <!-- Progress Display (Hidden by default) -->
                 <div class="simple-progress-container" id="progressContainer" style="display: none;">
                     <div class="progress-content">
                         <div class="progress-icon">
@@ -55,112 +88,157 @@
                             <div class="progress-bar-fill"></div>
                         </div>
                         
+                        <div class="progress-phrase">
+                            <p class="motivational-text">✨ Creating magic with AI ✨</p>
+                            <p class="sub-text">Your personalized virtual try-on is being crafted...</p>
+                        </div>
+                        
                         <p class="progress-message" id="progressMessage">Processing in progress...</p>
                     </div>
                 </div>
 
-                <!-- Clean Upload Form - Reorganized Flow -->
+                <!-- Upload Form Container -->
                 <div class="upload-form-container">
                     <form method="post" action="{% url 'upload' %}" enctype="multipart/form-data" id="uploadForm">
                         {% csrf_token %}
-                        <div class="card upload-card" style="background: var(--glass-secondary); backdrop-filter: blur(20px); border: 1px solid var(--glass-border-secondary); border-radius: 24px; padding: 2.5rem; box-shadow: var(--shadow-xl);">
-                            <div class="card-body" style="padding: 0;">
-                                <!-- Step 1: File Upload Section -->
-                                <div class="mb-4">
-                                    <h5 class="form-section-title" style="color: var(--text-primary); margin-bottom: 1.5rem; font-weight: 600;">
-                                        <i class="bi bi-cloud-upload me-2"></i>Step 1: Upload Your Photo
-                                    </h5>
-                                    <div class="file-upload-wrapper" style="position: relative; border: 2px dashed var(--glass-border-secondary); border-radius: 16px; padding: 3rem 2rem; background: var(--glass-secondary); transition: all 0.3s ease; cursor: pointer;">
-                                        <input type="file" 
-                                               name="original_image" 
-                                               id="imageUpload" 
-                                               accept="image/*" 
-                                               required 
-                                               style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
-                                        <div class="file-upload-placeholder text-center" style="pointer-events: none;">
-                                            <i class="bi bi-cloud-upload-fill" style="font-size: 3rem; color: var(--accent-secondary); margin-bottom: 1rem; display: block;"></i>
-                                            <span style="color: var(--text-primary); font-size: 1.2rem; font-weight: 500; display: block; margin-bottom: 0.5rem;">Choose a photo or drag and drop</span>
-                                            <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">Or click to browse files</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Step 2: Quick Templates Section -->
-                                <div class="mb-4">
-                                    <h5 class="form-section-title" style="color: var(--text-primary); margin-bottom: 1.5rem; font-weight: 600;">
-                                        <i class="bi bi-palette me-2"></i>Step 2: Choose a Template (Optional)
-                                    </h5>
-                                    <div class="row g-3">
-                                        <div class="col-lg-3 col-md-4 col-sm-6">
-                                            <div class="template-card" onclick="useTemplate('A stylish red evening dress with long sleeves and elegant design')">
-                                                <div class="template-icon">
-                                                    <i class="bi bi-stars"></i>
-                                                </div>
-                                                <h6>Evening Dress</h6>
-                                                <p>Red elegant dress with long sleeves</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-lg-3 col-md-4 col-sm-6">
-                                            <div class="template-card" onclick="useTemplate('A casual blue denim jacket with vintage style and comfortable fit')">
-                                                <div class="template-icon">
-                                                    <i class="bi bi-layers"></i>
-                                                </div>
-                                                <h6>Denim Jacket</h6>
-                                                <p>Casual blue vintage jacket</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-lg-3 col-md-4 col-sm-6">
-                                            <div class="template-card" onclick="useTemplate('A formal black business suit with tailored fit and professional appearance')">
-                                                <div class="template-icon">
-                                                    <i class="bi bi-briefcase"></i>
-                                                </div>
-                                                <h6>Business Suit</h6>
-                                                <p>Professional black formal suit</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-lg-3 col-md-4 col-sm-6">
-                                            <div class="template-card" onclick="useTemplate('A trendy white crop top with modern design and comfortable fabric')">
-                                                <div class="template-icon">
-                                                    <i class="bi bi-heart"></i>
-                                                </div>
-                                                <h6>Crop Top</h6>
-                                                <p>Trendy white modern crop top</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Step 3: Clothing Description Section -->
-                                <div class="mb-4">
-                                    <h5 class="form-section-title" style="color: var(--text-primary); margin-bottom: 1.5rem; font-weight: 600;">
-                                        <i class="bi bi-chat-square-text me-2"></i>Step 3: Describe Your Desired Outfit
-                                    </h5>
-                                    <div class="input-wrapper" style="position: relative;">
-                                        <textarea name="clothing_prompt" 
-                                                  id="clothingDescription" 
-                                                  class="form-control glass-input" 
-                                                  rows="3" 
-                                                  placeholder="Describe the clothing you want to try on... e.g., 'a red dress with long sleeves', 'a blue denim jacket', 'a formal black suit'"
-                                                  required 
-                                                  style="background: var(--glass-primary); border: 1px solid var(--glass-border-primary); border-radius: 12px; padding: 1rem; color: var(--text-primary); font-size: 1rem; resize: vertical; min-height: 100px;"></textarea>
-                                    </div>
-                                </div>
-
-                                <!-- Step 4: Submit Button -->
-                                <div class="text-center">
-                                    <button type="submit" 
-                                            id="submitBtn" 
-                                            class="btn btn-primary btn-lg" 
-                                            style="padding: 1rem 3rem; font-size: 1.1rem; border-radius: 16px; background: var(--gradient-primary); border: none; box-shadow: var(--shadow-lg), var(--glow-primary); transition: all 0.3s ease; position: relative; overflow: hidden;">
-                                        <i class="bi bi-magic me-2"></i>
-                                        <span>Generate Virtual Try-On</span>
-                                    </button>
+                        
+                        <!-- Step 1: Photo Upload -->
+                        <div class="mb-4">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-cloud-upload me-2"></i>Step 1: Upload Your Photo
+                            </h5>
+                            <div class="file-upload-wrapper">
+                                <input type="file" 
+                                       name="original_image" 
+                                       id="imageUpload" 
+                                       accept="image/*" 
+                                       required 
+                                       class="file-input">
+                                <div class="file-upload-placeholder">
+                                    <i class="bi bi-cloud-upload-fill"></i>
+                                    <span>Choose a photo or drag and drop</span>
+                                    <p>Support for JPG, PNG images up to 10MB</p>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Step 2: Template Selection -->
+                        <div class="mb-4">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-palette me-2"></i>Step 2: Choose a Template (Optional)
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="template-card" onclick="useTemplate('A stylish red evening dress with long sleeves and elegant design')">
+                                        <div class="template-icon">
+                                            <i class="bi bi-stars"></i>
+                                        </div>
+                                        <h6>Evening Dress</h6>
+                                        <p>Red elegant dress with long sleeves</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="template-card" onclick="useTemplate('A casual blue denim jacket with vintage style and comfortable fit')">
+                                        <div class="template-icon">
+                                            <i class="bi bi-layers"></i>
+                                        </div>
+                                        <h6>Denim Jacket</h6>
+                                        <p>Casual blue vintage jacket</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="template-card" onclick="useTemplate('A formal black business suit with tailored fit and professional appearance')">
+                                        <div class="template-icon">
+                                            <i class="bi bi-briefcase"></i>
+                                        </div>
+                                        <h6>Business Suit</h6>
+                                        <p>Professional black formal suit</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="template-card" onclick="useTemplate('A trendy white crop top with modern design and comfortable fabric')">
+                                        <div class="template-icon">
+                                            <i class="bi bi-heart"></i>
+                                        </div>
+                                        <h6>Crop Top</h6>
+                                        <p>Trendy white modern crop top</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="template-card" onclick="useTemplate('A comfortable black hoodie with modern streetwear design')">
+                                        <div class="template-icon">
+                                            <i class="bi bi-shirt"></i>
+                                        </div>
+                                        <h6>Hoodie</h6>
+                                        <p>Modern black streetwear hoodie</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="template-card" onclick="useTemplate('An elegant white wedding dress with flowing fabric and beautiful details')">
+                                        <div class="template-icon">
+                                            <i class="bi bi-flower1"></i>
+                                        </div>
+                                        <h6>Wedding Dress</h6>
+                                        <p>Elegant white wedding gown</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="template-card" onclick="useTemplate('A stylish leather jacket with modern biker design and premium finish')">
+                                        <div class="template-icon">
+                                            <i class="bi bi-fire"></i>
+                                        </div>
+                                        <h6>Leather Jacket</h6>
+                                        <p>Premium black leather jacket</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="template-card" onclick="useTemplate('A vibrant summer dress with floral patterns and light fabric')">
+                                        <div class="template-icon">
+                                            <i class="bi bi-flower2"></i>
+                                        </div>
+                                        <h6>Summer Dress</h6>
+                                        <p>Floral pattern summer dress</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Clothing Description -->
+                        <div class="mb-4">
+                            <h5 class="form-section-title">
+                                <i class="bi bi-chat-square-text me-2"></i>Step 3: Describe Your Desired Outfit
+                            </h5>
+                            <textarea name="clothing_prompt" 
+                                      id="clothingDescription" 
+                                      class="generate-form-control" 
+                                      rows="4" 
+                                      placeholder="Describe the clothing you want to try on... e.g., 'a red dress with long sleeves', 'a blue denim jacket', 'a formal black suit'"
+                                      required></textarea>
+                            <small class="form-text text-muted">
+                                Be specific about colors, style, and details for the best results.
+                            </small>
+                        </div>
+
+                        <!-- Step 4: Generate Button -->
+                        <div class="text-center">
+                            <button type="submit" 
+                                    id="submitBtn" 
+                                    class="btn-generate">
+                                <i class="bi bi-magic me-2"></i>
+                                <span>Generate Virtual Try-On</span>
+                            </button>
+                            <p class="submit-note mt-2">
+                                <small class="text-muted">Processing typically takes 2-3 minutes</small>
+                            </p>
+                        </div>
+                        
                     </form>
                 </div>
             </div>
@@ -172,277 +250,3 @@
 {% block extra_js %}
 <script src="/static/js/generate-page.js"></script>
 {% endblock %}
-
-<style>
-/* Hero Section Floating Elements */
-.floating-fashion-elements {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 1;
-}
-
-.floating-element {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 80px;
-    height: 80px;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 2.5rem;
-    animation: float 6s ease-in-out infinite;
-}
-
-.floating-element:nth-child(1) { top: 10%; left: 10%; }
-.floating-element:nth-child(2) { top: 20%; right: 15%; }
-.floating-element:nth-child(3) { top: 30%; left: 25%; }
-.floating-element:nth-child(4) { top: 40%; right: 10%; }
-.floating-element:nth-child(5) { top: 50%; left: 15%; }
-.floating-element:nth-child(6) { top: 60%; right: 20%; }
-
-@keyframes float {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-/* Template Cards Styles */
-.template-card {
-    background: var(--glass-secondary);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border-secondary);
-    border-radius: 16px;
-    padding: 1.5rem 1rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-.template-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s ease;
-}
-
-.template-card:hover::before {
-    left: 100%;
-}
-
-.template-card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 25px var(--shadow-lg), var(--glow-primary);
-    border-color: var(--accent-primary);
-    background: var(--glass-primary);
-}
-
-.template-card:active {
-    transform: translateY(-2px) scale(0.98);
-}
-
-.template-icon {
-    width: 50px;
-    height: 50px;
-    background: var(--gradient-secondary);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    transition: all 0.3s ease;
-}
-
-.template-icon i {
-    font-size: 1.5rem;
-    color: white;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
-}
-
-.template-card:hover .template-icon {
-    transform: scale(1.1);
-    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
-}
-
-.template-card h6 {
-    color: var(--text-primary);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-}
-
-.template-card p {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    margin: 0;
-    line-height: 1.4;
-}
-
-.template-card:hover h6 {
-    color: white;
-}
-
-.template-card:hover p {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-/* Template Section Styling */
-.template-section {
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .template-card {
-        padding: 1.2rem 0.8rem;
-    }
-    
-    .template-icon {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .template-icon i {
-        font-size: 1.2rem;
-    }
-}
-
-/* Simple Clean Progress Bar Styles */
-.simple-progress-container {
-    background: var(--glass-secondary);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border-secondary);
-    border-radius: 24px;
-    padding: 3rem 2rem;
-    text-align: center;
-    box-shadow: var(--shadow-xl);
-    animation: fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.progress-content {
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.progress-icon {
-    width: 80px;
-    height: 80px;
-    background: var(--gradient-primary);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 2rem;
-    animation: pulse 2s infinite;
-}
-
-.progress-icon i {
-    font-size: 2.5rem;
-    color: white;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
-}
-
-.progress-title {
-    color: white;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    font-size: 2rem;
-}
-
-.progress-subtitle {
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 2.5rem;
-    font-size: 1.1rem;
-}
-
-.simple-progress-bar {
-    width: 100%;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 2rem 0;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #8b5cf6, #a855f7, #c084fc, #e879f9);
-    background-size: 200% 100%;
-    border-radius: 4px;
-    animation: progressFlow 2s linear infinite;
-    width: 100%;
-}
-
-.progress-message {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
-    margin-top: 1.5rem;
-    animation: fadeInOut 3s ease-in-out infinite;
-}
-
-/* Animations */
-@keyframes fadeInScale {
-    0% {
-        opacity: 0;
-        transform: scale(0.9) translateY(20px);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-@keyframes progressFlow {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-@keyframes pulse {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);
-    }
-    50% { 
-        transform: scale(1.05); 
-        box-shadow: 0 0 60px rgba(139, 92, 246, 0.6);
-    }
-}
-
-@keyframes fadeInOut {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
-}
-
-/* Upload Form Enhancements */
-.file-upload-wrapper:hover {
-    border-color: var(--accent-primary);
-    background: var(--glass-primary);
-    transform: scale(1.01);
-}
-
-.glass-input:focus {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-    outline: none;
-}
-
-.btn:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: var(--shadow-xl), var(--glow-primary);
-}
-</style>
