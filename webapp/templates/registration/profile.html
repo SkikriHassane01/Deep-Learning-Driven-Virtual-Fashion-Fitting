@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Virtual Fashion Try-On{% endblock %}
+
+{% block content %}
+<!-- Profile Header Section -->
+<section class="hero-section section" style="padding: 4rem 0;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="hero-title" style="font-size: 3rem;">
+                    <i class="bi bi-person-circle me-3"></i>
+                    Hello, {{ user.username }}!
+                </h1>
+                <p class="hero-subtitle">
+                    Welcome to your personal fashion dashboard. Here you can view all your virtual try-on results and manage your account.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Profile Stats Section -->
+<section class="how-it-works-section section section-light" style="padding: 4rem 0;">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-images" style="color: white;"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4 class="feature-title">{{ user_results.count }}</h4>
+                        <p class="feature-description">Total Try-On Results</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-calendar-check" style="color: white;"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4 class="feature-title">{{ user.date_joined|date:"M d, Y" }}</h4>
+                        <p class="feature-description">Member Since</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-magic" style="color: white;"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4 class="feature-title">
+                            <a href="{% url 'index' %}" class="btn btn-outline-primary btn-sm profile-cta-btn">
+                                New Try-On
+                            </a>
+                        </h4>
+                        <p class="feature-description">Create Another Look</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- User's Try-On Results Section -->
+<section class="recent-tryons-section section">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title">
+                <i class="bi bi-collection me-3"></i>
+                Your Fashion Gallery
+            </h2>
+            <p class="section-subtitle">All your virtual try-on experiments in one place</p>
+        </div>
+        
+        {% if user_results %}
+            <div class="row g-4">
+                {% for result in user_results %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="tryon-card" style="padding: 0; border-radius: 24px; overflow: hidden;">
+                        {% if result.result_image %}
+                            <div class="tryon-image-wrapper" style="position: relative; height: 250px; overflow: hidden; border-radius: 24px 24px 0 0; display: flex; align-items: center; justify-content: center; background: var(--bg-tertiary);">
+                                <img src="{{ result.result_image.url }}" alt="Try-on result" 
+                                     style="max-width: 100%; max-height: 100%; object-fit: contain; object-position: center; transition: transform 0.4s ease; display: block;">
+                                <div class="tryon-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%); opacity: 0; transition: opacity 0.4s ease;"></div>
+                            </div>
+                        {% else %}
+                            <div class="tryon-image-placeholder" style="height: 250px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; border-radius: 24px 24px 0 0;">
+                                {% if result.processing_status == 'processing' %}
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary mb-2" role="status">
+                                            <span class="visually-hidden">Processing...</span>
+                                        </div>
+                                        <p style="color: var(--text-muted); font-size: 0.9rem;">Processing...</p>
+                                    </div>
+                                {% elif result.processing_status == 'failed' %}
+                                    <div class="text-center">
+                                        <i class="bi bi-exclamation-triangle" style="font-size: 3rem; color: var(--error); opacity: 0.7;"></i>
+                                        <p style="color: var(--error); font-size: 0.9rem; margin-top: 0.5rem;">Processing Failed</p>
+                                    </div>
+                                {% else %}
+                                    <i class="bi bi-image" style="font-size: 3rem; color: var(--text-muted); opacity: 0.5;"></i>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        <div class="tryon-content" style="padding: 1.5rem;">
+                            <h4 class="tryon-title" style="font-size: 1.2rem; margin-bottom: 0.8rem;">
+                                {% if result.processing_status == 'completed' %}
+                                    Virtual Try-On Result
+                                {% elif result.processing_status == 'processing' %}
+                                    Processing Try-On...
+                                {% elif result.processing_status == 'failed' %}
+                                    Failed Try-On
+                                {% else %}
+                                    Pending Try-On
+                                {% endif %}
+                            </h4>
+                            <p class="tryon-description" style="margin-bottom: 1.2rem; font-size: 0.9rem;">{{ result.clothing_prompt|truncatechars:80 }}</p>
+                            <small style="color: var(--text-muted); display: block; margin-bottom: 1rem;">{{ result.created_at|date:"M d, Y \a\t g:i A" }}</small>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'result' result.id %}" class="btn-view flex-fill text-center">
+                                    <i class="bi bi-eye me-1"></i>
+                                    <span>View Details</span>
+                                </a>
+                                {% if result.processing_status == 'completed' and result.result_image %}
+                                <a href="{{ result.result_image.url }}" download class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Empty state -->
+            <div class="text-center" style="padding: 4rem 2rem;">
+                <div class="feature-icon mx-auto mb-4" style="width: 120px; height: 120px;">
+                    <i class="bi bi-image" style="font-size: 3rem; color: white;"></i>
+                </div>
+                <h3 style="color: var(--text-primary); margin-bottom: 1rem;">No Try-Ons Yet</h3>
+                <p style="color: var(--text-secondary); max-width: 400px; margin: 0 auto 2rem;">
+                    You haven't created any virtual try-ons yet. Start your fashion journey by uploading a photo and trying on some amazing outfits!
+                </p>
+                <a href="{% url 'index' %}" class="btn btn-primary btn-lg profile-main-cta">
+                    <i class="bi bi-magic me-2"></i>
+                    Create Your First Try-On
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced animations and interactions
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+            }
+        });
+    }, observerOptions);
+    
+    // Observe elements for animation
+    const animateElements = document.querySelectorAll('.feature-card, .tryon-card, .section-header');
+    animateElements.forEach(el => {
+        el.classList.add('animate-on-scroll');
+        observer.observe(el);
+    });
+    
+    // Enhanced hover effects for try-on cards with images
+    const tryonCards = document.querySelectorAll('.tryon-card');
+    tryonCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const img = this.querySelector('.tryon-image-wrapper img');
+            const overlay = this.querySelector('.tryon-overlay');
+            const placeholder = this.querySelector('.tryon-image-placeholder i');
+            
+            if (img) {
+                img.style.transform = 'scale(1.05)';
+            }
+            if (overlay) {
+                overlay.style.opacity = '1';
+            }
+            if (placeholder) {
+                placeholder.style.transform = 'scale(1.1)';
+                placeholder.style.color = 'var(--accent-secondary)';
+            }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const img = this.querySelector('.tryon-image-wrapper img');
+            const overlay = this.querySelector('.tryon-overlay');
+            const placeholder = this.querySelector('.tryon-image-placeholder i');
+            
+            if (img) {
+                img.style.transform = 'scale(1)';
+            }
+            if (overlay) {
+                overlay.style.opacity = '0';
+            }
+            if (placeholder) {
+                placeholder.style.transform = 'scale(1)';
+                placeholder.style.color = 'var(--text-muted)';
+            }
+        });
+    });
+    
+    // Add ripple effect to buttons
+    const buttons = document.querySelectorAll('.btn-view, .btn-generate, .btn-outline-primary');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+            ripple.classList.add('ripple');
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+});
+</script>
+
+<style>
+/* Additional styles for profile page */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple-animation 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple-animation {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.animate-in {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+/* Enhanced download button */
+.btn-outline-primary {
+    border: 2px solid var(--accent-primary);
+    color: var(--accent-primary);
+    background: transparent;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background: var(--accent-primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+/* Profile-specific button styles */
+.profile-cta-btn {
+    border: 2px solid var(--accent-primary) !important;
+    color: var(--accent-primary) !important;
+    background: transparent !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s ease !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+}
+
+.profile-cta-btn:hover {
+    background: var(--accent-primary) !important;
+    color: white !important;
+    border-color: var(--accent-primary) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.profile-main-cta {
+    background: var(--accent-primary) !important;
+    border: none !important;
+    color: white !important;
+    padding: 1rem 2rem !important;
+    border-radius: 12px !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.profile-main-cta:hover {
+    background: var(--accent-secondary) !important;
+    color: white !important;
+    transform: none !important;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important;
+}
+</style>
+{% endblock %}

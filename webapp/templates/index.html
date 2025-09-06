@@ -1,0 +1,1101 @@
+{% extends 'base.html' %}
+
+{% block title %}Virtual Fashion Try-On - Home{% endblock %}
+
+{% block content %}
+<!-- Enhanced Hero Section -->
+<section class="hero-section section position-relative">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <!-- Content Column -->
+            <div class="col-lg-6 col-md-7">
+                <div class="hero-content">
+                    <h1 class="hero-title mb-4">
+                        Virtual Fashion Try-On
+                    </h1>
+                    <p class="hero-subtitle mb-4">
+                        Transform your look with AI-powered fashion visualization. Upload your photo and describe the clothing you want to try on!
+                    </p>
+                    
+                    <!-- Quick Action Buttons -->
+                    <div class="hero-actions d-flex flex-wrap gap-3 mb-4">
+                        <a href="#try-on-section" class="btn btn-primary btn-lg">
+                            <i class="bi bi-magic me-2"></i>
+                            Try On Now
+                        </a>
+                        <a href="{% url 'gallery' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-images me-2"></i>
+                            View Gallery
+                        </a>
+                    </div>
+                    
+                    {% if not ai_available %}
+                        <div class="alert alert-warning d-inline-flex align-items-center" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            AI models are not available. Using fallback mode for demonstration.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Hero Image Column -->
+            <div class="col-lg-6 col-md-5 d-none d-md-block">
+                <div class="hero-image-container">
+                    <div class="hero-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3" 
+                             alt="Fashion Model" 
+                             class="hero-image">
+                        <div class="hero-image-overlay"></div>
+                        <div class="floating-elements">
+                            <div class="floating-dot dot-1"></div>
+                            <div class="floating-dot dot-2"></div>
+                            <div class="floating-dot dot-3"></div>
+                            <div class="floating-dot dot-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced How It Works Section -->
+<section class="how-it-works-section section section-light">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Get your perfect virtual try-on in three simple steps</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card glass-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-cloud-upload"></i>
+                        <div class="feature-number">1</div>
+                    </div>
+                    <div class="feature-content">
+                        <h4 class="feature-title" style="color: white;">Upload Your Photo</h4>
+                        <p class="feature-description" style="color: rgba(255, 255, 255, 0.8);">Choose a clear photo showing your upper body with good lighting for the best results</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card glass-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-chat-text"></i>
+                        <div class="feature-number">2</div>
+                    </div>
+                    <div class="feature-content">
+                        <h4 class="feature-title" style="color: white;">Describe Your Style</h4>
+                        <p class="feature-description" style="color: rgba(255, 255, 255, 0.8);">Enter a detailed description of your desired clothing, including colors and style preferences</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card glass-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-magic"></i>
+                        <div class="feature-number">3</div>
+                    </div>
+                    <div class="feature-content">
+                        <h4 class="feature-title" style="color: white;">Get Amazing Results</h4>
+                        <p class="feature-description" style="color: rgba(255, 255, 255, 0.8);">Our AI technology generates your virtual try-on in seconds with stunning accuracy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Enhanced Try On Section -->
+<section class="try-on-section section" id="try-on-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                {% if user.is_authenticated %}
+                    <!-- Enhanced Progress Visualization (Hidden Initially) -->
+                    <div class="glass-progress-container" id="progressContainer" style="display: none;">
+                        <div class="progress-circle" id="progressCircle">
+                            <div class="progress-percentage" id="progressPercentage">0%</div>
+                        </div>
+                        <h5 class="mb-3" style="color: white;">
+                            <i class="bi bi-magic me-2 pulse"></i>
+                            <span id="progressTitle">Processing Your Virtual Try-On...</span>
+                        </h5>
+                        <div class="glass-progress">
+                            <div class="glass-progress-bar" id="progressBar" style="width: 0%"></div>
+                        </div>
+                        <p class="progress-text mt-3" id="progressText" style="color: rgba(255, 255, 255, 0.9);">Initializing AI pipeline...</p>
+                        
+                        <div class="progress-steps mt-4">
+                            <div class="progress-step" id="step1">
+                                <h6 style="color: white; margin-bottom: 0.5rem;">1. Image Analysis</h6>
+                                <small style="color: rgba(255, 255, 255, 0.7);">Processing your photo</small>
+                            </div>
+                            <div class="progress-step" id="step2">
+                                <h6 style="color: white; margin-bottom: 0.5rem;">2. Body Parsing</h6>
+                                <small style="color: rgba(255, 255, 255, 0.7);">Detecting body regions</small>
+                            </div>
+                            <div class="progress-step" id="step3">
+                                <h6 style="color: white; margin-bottom: 0.5rem;">3. AI Generation</h6>
+                                <small style="color: rgba(255, 255, 255, 0.7);">Creating your try-on</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Upload Form with Glass Styling -->
+                    <div class="upload-card glass-card glass-card-lg" style="border: 1px solid var(--glass-border-primary);">
+                        <div class="upload-card-header" style="background: var(--glass-gradient-primary); backdrop-filter: blur(16px);">
+                            <h3 class="upload-title">
+                                <i class="bi bi-magic me-3"></i>
+                                Try On New Outfit
+                            </h3>
+                            <p class="upload-subtitle">Ready to see how you look in your dream outfit?</p>
+                        </div>
+                    
+                    <div class="upload-card-body">
+                        <form method="post" action="{% url 'upload' %}" enctype="multipart/form-data" id="uploadForm">
+                            {% csrf_token %}
+                            
+                            <!-- Enhanced Image Upload -->
+                            <div class="form-group">
+                                <label for="image" class="form-label" style="color: white;">
+                                    <i class="bi bi-camera me-2"></i>
+                                    Upload Your Photo
+                                </label>
+                                <div class="file-upload-wrapper glass-base" style="background: var(--glass-secondary); border: 2px dashed var(--glass-border-secondary);">
+                                    <input type="file" class="form-control file-input" id="image" name="image" 
+                                           accept="image/*" required>
+                                    <div class="file-upload-placeholder">
+                                        <i class="bi bi-cloud-upload-fill" style="color: var(--accent-primary); font-size: 3rem; margin-bottom: 1rem;"></i>
+                                        <span style="color: white; font-size: 1.1rem; font-weight: 500;">Choose a photo or drag and drop</span>
+                                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-top: 0.5rem;">Or click to browse files</p>
+                                    </div>
+                                </div>
+                                <div class="form-text" style="color: rgba(255, 255, 255, 0.7);">
+                                    📁 Supported formats: JPG, PNG, GIF. For best results, use a clear photo with good lighting.
+                                </div>
+                            </div>
+                            
+                            <!-- Style Templates Section -->
+                            <div class="style-templates">
+                                <label class="form-label" style="color: white;">
+                                    <i class="bi bi-palette me-2"></i>
+                                    Quick Style Templates
+                                </label>
+                                <div class="templates-grid">
+                                    <div class="template-card" onclick="useTemplate('elegant red evening dress with flowing fabric and sophisticated silhouette, perfect for formal events')">
+                                        <div class="template-icon">
+                                            <i class="bi bi-gem"></i>
+                                        </div>
+                                        <h6 class="template-title">Elegant Dress</h6>
+                                        <p class="template-description">Sophisticated formal evening wear</p>
+                                    </div>
+                                    <div class="template-card" onclick="useTemplate('comfortable blue jeans with white cotton t-shirt for everyday style, casual and relaxed fit')">
+                                        <div class="template-icon" style="background: var(--glass-gradient-accent);">
+                                            <i class="bi bi-person-casual"></i>
+                                        </div>
+                                        <h6 class="template-title">Casual Wear</h6>
+                                        <p class="template-description">Comfortable everyday style</p>
+                                    </div>
+                                    <div class="template-card" onclick="useTemplate('professional black business suit with crisp white shirt and tie, corporate executive style')">
+                                        <div class="template-icon" style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%);">
+                                            <i class="bi bi-briefcase"></i>
+                                        </div>
+                                        <h6 class="template-title">Business</h6>
+                                        <p class="template-description">Professional corporate attire</p>
+                                    </div>
+                                    <div class="template-card" onclick="useTemplate('trendy summer outfit with floral patterns and light breathable fabrics, vibrant colors')">
+                                        <div class="template-icon" style="background: var(--glass-gradient-tertiary);">
+                                            <i class="bi bi-sun"></i>
+                                        </div>
+                                        <h6 class="template-title">Summer Style</h6>
+                                        <p class="template-description">Light & breezy seasonal wear</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Enhanced Text Description -->
+                            <div class="form-group">
+                                <label for="prompt" class="form-label" style="color: white;">
+                                    <i class="bi bi-chat-text me-2"></i>
+                                    Describe Your Desired Clothing
+                                </label>
+                                <textarea class="glass-input" id="prompt" name="prompt" rows="4" 
+                                          placeholder="Describe your dream outfit... (e.g., elegant red evening dress, casual blue jeans with white t-shirt, formal black suit with tie)"
+                                          required maxlength="500" style="resize: vertical;"></textarea>
+                                <div class="form-text" style="color: rgba(255, 255, 255, 0.7);">
+                                    💡 Be specific about colors, style, and type of clothing for the most accurate results.
+                                </div>
+                            </div>
+                            
+                            <!-- Enhanced Submit Button -->
+                            <div class="submit-wrapper text-center">
+                                <button type="submit" class="glass-btn glass-btn-primary" id="submitBtn" style="min-width: 280px; font-size: 1.2rem; padding: 1rem 2rem;">
+                                    <span class="btn-content">
+                                        <i class="bi bi-magic me-2"></i>
+                                        Generate Virtual Try-On
+                                    </span>
+                                    <span class="btn-loading d-none">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                        Processing Magic...
+                                    </span>
+                                </button>
+                                <p class="mt-3" style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
+                                    ✨ Your transformation will be ready in ~2-3 minutes
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                    <!-- Enhanced Authentication Required -->
+                    <div class="upload-card glass-card glass-card-lg" style="border: 1px solid var(--glass-border-primary);">
+                        <div class="upload-card-header" style="background: var(--glass-gradient-primary); backdrop-filter: blur(16px);">
+                            <h3 class="upload-title">
+                                <i class="bi bi-person-lock me-3"></i>
+                                Ready to Transform Your Style?
+                            </h3>
+                            <p class="upload-subtitle">Sign in or create an account to access our AI-powered virtual try-on experience</p>
+                        </div>
+                        
+                        <div class="upload-card-body text-center">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="auth-feature glass-card-sm">
+                                        <i class="bi bi-upload" style="font-size: 2.5rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
+                                        <h5 style="color: white;">Upload Your Photo</h5>
+                                        <p style="color: rgba(255, 255, 255, 0.8);">Upload your images securely to your personal account</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="auth-feature glass-card-sm">
+                                        <i class="bi bi-clock-history" style="font-size: 2.5rem; color: var(--accent-secondary); margin-bottom: 1rem;"></i>
+                                        <h5 style="color: white;">Save Your Try-Ons</h5>
+                                        <p style="color: rgba(255, 255, 255, 0.8);">Access your virtual try-on history anytime from your profile</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="auth-actions mt-4">
+                                <a href="{% url 'register' %}" class="glass-btn glass-btn-primary me-3">
+                                    <i class="bi bi-person-plus me-2"></i>
+                                    Create Account
+                                </a>
+                                <a href="{% url 'login' %}" class="glass-btn glass-btn-outline">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Sign In
+                                </a>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <div class="glass-badge">
+                                    <i class="bi bi-shield-check me-2"></i>
+                                    Your privacy is protected. We never share your photos.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Enhanced Split-Screen Results Display -->
+                    <div id="results-display" class="results-container" style="display: none;">
+                        <div class="split-screen-results">
+                            <div class="text-center mb-4">
+                                <h3>
+                                    <i class="bi bi-magic"></i>
+                                    Your Try-On Result
+                                </h3>
+                                <p class="text-muted">Drag the slider to compare before and after</p>
+                            </div>
+                            
+                            <!-- Split Screen Comparison -->
+                            <div class="comparison-wrapper">
+                                <button class="fullscreen-toggle" onclick="toggleFullscreen()">
+                                    <i class="bi bi-arrows-fullscreen"></i>
+                                </button>
+                                
+                                <div class="before-after-container" id="comparison-container">
+                                    <img id="original-image" class="before-image" alt="Original image" style="display: none;">
+                                    <img id="result-image" class="after-image" alt="Try-on result" style="display: none;">
+                                    
+                                    <div class="comparison-slider" id="comparison-slider">
+                                        <div class="slider-handle"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="comparison-labels">
+                                    <div class="comparison-label">
+                                        <i class="bi bi-person"></i> Original
+                                    </div>
+                                    <div class="comparison-label">
+                                        <i class="bi bi-palette"></i> With Garment
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Processing Statistics -->
+                            <div class="results-metadata" id="processing-stats" style="display: none;">
+                                <div class="metadata-card">
+                                    <span class="metadata-value" id="processing-time">2.3s</span>
+                                    <span class="metadata-label">Processing Time</span>
+                                </div>
+                                <div class="metadata-card">
+                                    <span class="metadata-value" id="quality-score">94%</span>
+                                    <span class="metadata-label">Quality Score</span>
+                                </div>
+                                <div class="metadata-card">
+                                    <span class="metadata-value" id="fit-accuracy">98%</span>
+                                    <span class="metadata-label">Fit Accuracy</span>
+                                </div>
+                                <div class="metadata-card">
+                                    <span class="metadata-value" id="realism-level">High</span>
+                                    <span class="metadata-label">Realism Level</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="results-actions">
+                                <button class="action-button primary" onclick="downloadResult()">
+                                    <i class="bi bi-download"></i>
+                                    Download HD
+                                </button>
+                                <button class="action-button" onclick="shareResult()">
+                                    <i class="bi bi-share"></i>
+                                    Share Result
+                                </button>
+                                <button class="action-button" onclick="saveToGallery()">
+                                    <i class="bi bi-bookmark-plus"></i>
+                                    Save to Gallery
+                                </button>
+                                <button class="action-button" onclick="tryAnother()">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                    Try Another
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Try-Ons Section - Only for Authenticated Users -->
+{% if user.is_authenticated and recent_results %}
+<section class="recent-tryons-section section section-light">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title">
+                <i class="bi bi-clock-history me-3"></i>
+                Your Recent Try-Ons
+            </h2>
+            <p class="section-subtitle">Your latest virtual fashion experiments</p>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            {% for result in recent_results %}
+            <div class="col-lg-4 col-md-6">
+                <div class="tryon-card" style="padding: 0; border-radius: 24px; overflow: hidden;">
+                    {% if result.result_image %}
+                        <div class="tryon-image-wrapper" style="position: relative; height: 250px; overflow: hidden; border-radius: 24px 24px 0 0; display: flex; align-items: center; justify-content: center; background: var(--bg-tertiary);">
+                            <img src="{{ result.result_image.url }}" alt="Try-on result" 
+                                 style="max-width: 100%; max-height: 100%; object-fit: contain; object-position: center; transition: transform 0.4s ease; display: block;">
+                            <div class="tryon-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%); opacity: 0; transition: opacity 0.4s ease;"></div>
+                        </div>
+                    {% else %}
+                        <div class="tryon-image-placeholder" style="height: 250px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; border-radius: 24px 24px 0 0;">
+                            <i class="bi bi-image" style="font-size: 3rem; color: var(--text-muted); opacity: 0.5;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="tryon-content" style="padding: 1.5rem;">
+                        <h4 class="tryon-title" style="font-size: 1.2rem; margin-bottom: 0.8rem;">Virtual Try-On Result</h4>
+                        <p class="tryon-description" style="margin-bottom: 1.2rem; font-size: 0.9rem;">{{ result.clothing_prompt|truncatechars:80 }}</p>
+                        <small style="color: var(--text-muted); display: block; margin-bottom: 1rem;">{{ result.created_at|date:"M d, Y" }}</small>
+                        <a href="{% url 'result' result.id %}" class="btn-view" style="width: 100%; text-align: center; padding: 0.75rem 1rem;">
+                            <i class="bi bi-eye me-1"></i>
+                            <span>View Details</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Style Template Functionality
+function useTemplate(templateText) {
+    const promptTextarea = document.getElementById('prompt');
+    if (promptTextarea) {
+        promptTextarea.value = templateText;
+        promptTextarea.focus();
+        
+        // Add visual feedback
+        promptTextarea.style.transform = 'scale(1.02)';
+        promptTextarea.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.3)';
+        setTimeout(() => {
+            promptTextarea.style.transform = 'scale(1)';
+            promptTextarea.style.boxShadow = '';
+        }, 200);
+    }
+}
+
+
+// Enhanced form submission with glassmorphism progress
+const uploadForm = document.getElementById('uploadForm');
+if (uploadForm) {
+    uploadForm.addEventListener('submit', function() {
+        const submitBtn = document.getElementById('submitBtn');
+        const btnContent = submitBtn.querySelector('.btn-content');
+        const btnLoading = submitBtn.querySelector('.btn-loading');
+        const progressContainer = document.getElementById('progressContainer');
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        btnContent.classList.add('d-none');
+        btnLoading.classList.remove('d-none');
+        
+        // Show enhanced progress container
+        setTimeout(() => {
+            this.closest('.upload-card').style.display = 'none';
+            progressContainer.style.display = 'block';
+            simulateEnhancedProgress();
+        }, 100);
+    });
+}
+
+// Enhanced Progress Simulation with Glass Effects
+function simulateEnhancedProgress() {
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const progressCircle = document.getElementById('progressCircle');
+    const progressPercentage = document.getElementById('progressPercentage');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    
+    let currentProgress = 0;
+    const totalSteps = 100;
+    
+    // Processing phases
+    const phases = [
+        { 
+            progress: 25, 
+            text: 'Analyzing your photo with AI vision...', 
+            duration: 3000,
+            step: step1
+        },
+        { 
+            progress: 60, 
+            text: 'Parsing body regions and clothing areas...', 
+            duration: 4000,
+            step: step2
+        },
+        { 
+            progress: 95, 
+            text: 'Generating your virtual try-on...', 
+            duration: 8000,
+            step: step3
+        },
+        { 
+            progress: 100, 
+            text: 'Finalizing your transformation!', 
+            duration: 2000,
+            step: null
+        }
+    ];
+    
+    let phaseIndex = 0;
+    
+    function executePhase() {
+        if (phaseIndex < phases.length) {
+            const phase = phases[phaseIndex];
+            
+            // Update text
+            progressText.textContent = phase.text;
+            
+            // Activate current step
+            if (phase.step) {
+                phase.step.classList.add('active');
+                // Mark previous steps as completed
+                phases.slice(0, phaseIndex).forEach(prevPhase => {
+                    if (prevPhase.step) {
+                        prevPhase.step.classList.remove('active');
+                        prevPhase.step.classList.add('completed');
+                    }
+                });
+            }
+            
+            // Animate progress
+            const targetProgress = phase.progress;
+            const progressDiff = targetProgress - currentProgress;
+            const progressIncrement = progressDiff / (phase.duration / 100);
+            
+            const progressInterval = setInterval(() => {
+                currentProgress += progressIncrement;
+                if (currentProgress >= targetProgress) {
+                    currentProgress = targetProgress;
+                    clearInterval(progressInterval);
+                    
+                    setTimeout(() => {
+                        phaseIndex++;
+                        executePhase();
+                    }, 500);
+                }
+                
+                // Update progress bar
+                progressBar.style.width = currentProgress + '%';
+                
+                // Update progress circle
+                progressPercentage.textContent = Math.round(currentProgress) + '%';
+                const circumference = 2 * Math.PI * 75; // radius = 75
+                const strokeDasharray = `${(currentProgress / 100) * circumference} ${circumference}`;
+                progressCircle.style.background = `conic-gradient(
+                    var(--glass-gradient-secondary) ${currentProgress * 3.6}deg,
+                    var(--glass-secondary) ${currentProgress * 3.6}deg
+                )`;
+                
+            }, 100);
+            
+        } else {
+            // All phases complete
+            setTimeout(() => {
+                progressText.textContent = 'Redirecting to your amazing results!';
+            }, 1000);
+        }
+    }
+    
+    // Start processing
+    executePhase();
+}
+
+
+// Enhanced animations and interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Intersection Observer for scroll animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+            }
+        });
+    }, observerOptions);
+    
+    // Observe elements for animation
+    const animateElements = document.querySelectorAll('.feature-card, .upload-card, .tryon-card, .section-header');
+    animateElements.forEach(el => {
+        el.classList.add('animate-on-scroll');
+        observer.observe(el);
+    });
+    
+    // Enhanced file input with glassmorphism
+    const fileInput = document.getElementById('image');
+    const fileWrapper = document.querySelector('.file-upload-wrapper');
+    const filePlaceholder = document.querySelector('.file-upload-placeholder');
+    
+    if (fileInput && fileWrapper && filePlaceholder) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Create preview if it's an image
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        filePlaceholder.innerHTML = `
+                            <img src="${e.target.result}" style="max-width: 150px; max-height: 150px; border-radius: 8px; margin-bottom: 1rem; object-fit: cover;">
+                            <div style="color: var(--accent-tertiary); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>${file.name}</span>
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    filePlaceholder.innerHTML = `
+                        <i class="bi bi-check-circle-fill" style="color: var(--accent-tertiary); font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <span style="color: var(--accent-tertiary); font-size: 1.1rem;">${file.name}</span>
+                    `;
+                }
+                
+                fileWrapper.style.borderColor = 'var(--glass-border-accent)';
+                fileWrapper.style.background = 'var(--glass-success)';
+                fileWrapper.style.transform = 'scale(1.01)';
+            }
+        });
+    }
+    
+    // Enhanced drag and drop with glassmorphism
+    if (fileWrapper) {
+        fileWrapper.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--glass-border-accent)';
+            this.style.background = 'var(--glass-accent)';
+            this.style.transform = 'scale(1.02)';
+            this.style.boxShadow = 'var(--glass-shadow-lg)';
+        });
+        
+        fileWrapper.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--glass-border-secondary)';
+            this.style.background = 'var(--glass-secondary)';
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = 'var(--glass-shadow-md)';
+        });
+        
+        fileWrapper.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'var(--glass-border-secondary)';
+            this.style.background = 'var(--glass-secondary)';
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = 'var(--glass-shadow-md)';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                const event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            }
+        });
+    }
+    
+    // Enhanced smooth scrolling and micro-interactions
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Add hover effects to interactive elements
+    const interactiveElements = document.querySelectorAll('.btn, .card, .nav-link');
+    interactiveElements.forEach(el => {
+        el.addEventListener('mouseenter', function() {
+            this.style.transform = this.style.transform || 'translateY(0)';
+            if (!this.style.transform.includes('scale')) {
+                this.style.transform += ' scale(1.02)';
+            }
+        });
+        
+        el.addEventListener('mouseleave', function() {
+            this.style.transform = this.style.transform.replace(' scale(1.02)', '');
+        });
+    });
+    
+    // Enhanced hover effects for try-on cards with images
+    const tryonCards = document.querySelectorAll('.tryon-card');
+    tryonCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const img = this.querySelector('.tryon-image-wrapper img');
+            const overlay = this.querySelector('.tryon-overlay');
+            const placeholder = this.querySelector('.tryon-image-placeholder i');
+            
+            if (img) {
+                img.style.transform = 'scale(1.05)';
+            }
+            if (overlay) {
+                overlay.style.opacity = '1';
+            }
+            if (placeholder) {
+                placeholder.style.transform = 'scale(1.1)';
+                placeholder.style.color = 'var(--accent-secondary)';
+            }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const img = this.querySelector('.tryon-image-wrapper img');
+            const overlay = this.querySelector('.tryon-overlay');
+            const placeholder = this.querySelector('.tryon-image-placeholder i');
+            
+            if (img) {
+                img.style.transform = 'scale(1)';
+            }
+            if (overlay) {
+                overlay.style.opacity = '0';
+            }
+            if (placeholder) {
+                placeholder.style.transform = 'scale(1)';
+                placeholder.style.color = 'var(--text-muted)';
+            }
+        });
+    });
+    
+    // Removed parallax effect to fix scrolling issues
+    
+    // Add ripple effect to buttons including view buttons
+    const buttons = document.querySelectorAll('.btn-generate, .btn-primary, .btn-view');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+            ripple.classList.add('ripple');
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+    
+    // Split-Screen Results Display Functionality
+    initializeSplitScreenResults();
+});
+
+// Split-Screen Results Display Functions
+function initializeSplitScreenResults() {
+    const slider = document.getElementById('comparison-slider');
+    const container = document.getElementById('comparison-container');
+    const afterImage = document.querySelector('.after-image');
+    
+    if (slider && container && afterImage) {
+        let isSliding = false;
+        
+        // Mouse events
+        slider.addEventListener('mousedown', startSliding);
+        document.addEventListener('mousemove', slide);
+        document.addEventListener('mouseup', stopSliding);
+        
+        // Touch events
+        slider.addEventListener('touchstart', startSliding);
+        document.addEventListener('touchmove', slide);
+        document.addEventListener('touchend', stopSliding);
+        
+        function startSliding(e) {
+            e.preventDefault();
+            isSliding = true;
+            slider.style.cursor = 'grabbing';
+        }
+        
+        function slide(e) {
+            if (!isSliding) return;
+            
+            const rect = container.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+            
+            // Update slider position
+            slider.style.left = percentage + '%';
+            
+            // Update clip path for after image
+            afterImage.style.clipPath = `polygon(${percentage}% 0%, 100% 0%, 100% 100%, ${percentage}% 100%)`;
+        }
+        
+        function stopSliding() {
+            isSliding = false;
+            slider.style.cursor = 'col-resize';
+        }
+    }
+}
+
+function showResults(originalSrc, resultSrc, processingStats = null) {
+    const resultsDisplay = document.getElementById('results-display');
+    const originalImage = document.getElementById('original-image');
+    const resultImage = document.getElementById('result-image');
+    const progressContainer = document.getElementById('progressContainer');
+    
+    if (resultsDisplay && originalImage && resultImage) {
+        // Hide progress and show results
+        if (progressContainer) {
+            progressContainer.style.display = 'none';
+        }
+        resultsDisplay.style.display = 'block';
+        
+        // Set image sources
+        originalImage.src = originalSrc;
+        resultImage.src = resultSrc;
+        
+        // Show images once loaded
+        originalImage.onload = () => {
+            originalImage.style.display = 'block';
+        };
+        
+        resultImage.onload = () => {
+            resultImage.style.display = 'block';
+        };
+        
+        // Update processing statistics if provided
+        if (processingStats) {
+            updateProcessingStats(processingStats);
+        }
+        
+        // Initialize split screen functionality
+        setTimeout(() => {
+            initializeSplitScreenResults();
+        }, 100);
+        
+        // Scroll to results
+        resultsDisplay.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function updateProcessingStats(stats) {
+    const processingStatsEl = document.getElementById('processing-stats');
+    if (processingStatsEl && stats) {
+        processingStatsEl.style.display = 'grid';
+        
+        // Update individual stats
+        const elements = {
+            'processing-time': stats.processingTime || '2.3s',
+            'quality-score': stats.qualityScore || '94%',
+            'fit-accuracy': stats.fitAccuracy || '98%',
+            'realism-level': stats.realismLevel || 'High'
+        };
+        
+        Object.entries(elements).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        });
+    }
+}
+
+function toggleFullscreen() {
+    const container = document.getElementById('comparison-container');
+    if (container) {
+        if (!document.fullscreenElement) {
+            container.requestFullscreen().catch(err => {
+                console.log('Fullscreen failed:', err);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+}
+
+function downloadResult() {
+    const resultImage = document.getElementById('result-image');
+    if (resultImage && resultImage.src) {
+        const link = document.createElement('a');
+        link.download = 'virtual-tryon-result.jpg';
+        link.href = resultImage.src;
+        link.click();
+    }
+}
+
+function shareResult() {
+    // Show social media sharing modal
+    const shareModal = createShareModal();
+    document.body.appendChild(shareModal);
+    
+    // Add glassmorphism backdrop
+    const backdrop = document.createElement('div');
+    backdrop.className = 'glass-modal-overlay';
+    backdrop.onclick = () => closeShareModal(shareModal, backdrop);
+    document.body.appendChild(backdrop);
+    
+    // Show modal with animation
+    setTimeout(() => {
+        shareModal.style.opacity = '1';
+        shareModal.style.transform = 'translate(-50%, -50%) scale(1)';
+    }, 10);
+}
+
+function createShareModal() {
+    const modal = document.createElement('div');
+    modal.className = 'share-modal';
+    modal.style.opacity = '0';
+    modal.style.transform = 'translate(-50%, -50%) scale(0.8)';
+    modal.style.transition = 'all 0.3s ease';
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.zIndex = '2000';
+    
+    modal.innerHTML = `
+        <h4 style="color: white; margin-bottom: 1.5rem; text-align: center;">
+            <i class="bi bi-share me-2"></i>
+            Share Your Try-On Result
+        </h4>
+        <div class="share-options">
+            <a href="#" class="share-option" onclick="shareToSocial('facebook')">
+                <i class="bi bi-facebook"></i>
+                <span>Facebook</span>
+            </a>
+            <a href="#" class="share-option" onclick="shareToSocial('twitter')">
+                <i class="bi bi-twitter"></i>
+                <span>Twitter</span>
+            </a>
+            <a href="#" class="share-option" onclick="shareToSocial('instagram')">
+                <i class="bi bi-instagram"></i>
+                <span>Instagram</span>
+            </a>
+            <a href="#" class="share-option" onclick="copyShareLink()">
+                <i class="bi bi-link-45deg"></i>
+                <span>Copy Link</span>
+            </a>
+        </div>
+        <button onclick="closeShareModal(this.closest('.share-modal'), document.querySelector('.glass-modal-overlay'))" class="glass-btn" style="width: 100%; margin-top: 1rem;">
+            Close
+        </button>
+    `;
+    
+    return modal;
+}
+
+function closeShareModal(modal, backdrop) {
+    modal.style.opacity = '0';
+    modal.style.transform = 'translate(-50%, -50%) scale(0.8)';
+    setTimeout(() => {
+        document.body.removeChild(modal);
+        document.body.removeChild(backdrop);
+    }, 300);
+}
+
+function shareToSocial(platform) {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent('Check out my virtual try-on result!');
+    
+    let shareUrl;
+    switch(platform) {
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            break;
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+            break;
+        case 'instagram':
+            // Instagram doesn't have URL sharing, copy to clipboard instead
+            copyShareLink();
+            return;
+        default:
+            return;
+    }
+    
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+}
+
+function copyShareLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        // Show temporary success message
+        const toast = document.createElement('div');
+        toast.className = 'glass-alert glass-alert-success';
+        toast.style.position = 'fixed';
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '3000';
+        toast.innerHTML = '<i class="bi bi-check-circle me-2"></i>Link copied to clipboard!';
+        
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 3000);
+    });
+}
+
+function saveToGallery() {
+    // This would integrate with your backend to save to user's gallery
+    const toast = document.createElement('div');
+    toast.className = 'glass-alert glass-alert-success';
+    toast.style.position = 'fixed';
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '3000';
+    toast.innerHTML = '<i class="bi bi-bookmark-plus me-2"></i>Saved to your gallery!';
+    
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        document.body.removeChild(toast);
+    }, 3000);
+}
+
+function tryAnother() {
+    const resultsDisplay = document.getElementById('results-display');
+    const uploadCard = document.querySelector('.upload-card');
+    
+    if (resultsDisplay && uploadCard) {
+        resultsDisplay.style.display = 'none';
+        uploadCard.style.display = 'block';
+        uploadCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Reset form
+        const form = document.getElementById('uploadForm');
+        if (form) {
+            form.reset();
+            
+            // Reset file input display
+            const filePlaceholder = document.querySelector('.file-upload-placeholder');
+            const fileWrapper = document.querySelector('.file-upload-wrapper');
+            if (filePlaceholder && fileWrapper) {
+                filePlaceholder.innerHTML = `
+                    <i class="bi bi-cloud-upload-fill" style="color: var(--accent-primary); font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <span style="color: white; font-size: 1.1rem; font-weight: 500;">Choose a photo or drag and drop</span>
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-top: 0.5rem;">Or click to browse files</p>
+                `;
+                fileWrapper.style.borderColor = 'var(--glass-border-secondary)';
+                fileWrapper.style.background = 'var(--glass-secondary)';
+                fileWrapper.style.transform = 'scale(1)';
+            }
+        }
+    }
+}
+
+</script>
+
+<style>
+/* Additional micro-interaction styles */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple-animation 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple-animation {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.animate-in {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+/* Smooth transitions for all elements */
+* {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Enhanced hover states */
+.card:hover {
+    will-change: transform;
+}
+
+.btn:hover {
+    will-change: transform, box-shadow;
+}
+
+/* Performance optimizations */
+.hero-section,
+.feature-card,
+.upload-card,
+.tryon-card {
+    will-change: transform;
+}
+</style>
+{% endblock %}

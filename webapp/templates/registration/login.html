@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Virtual Fashion Try-On{% endblock %}
+
+{% block content %}
+<!-- Login Section -->
+<section class="try-on-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="upload-card">
+                    <div class="upload-card-header">
+                        <h3 class="upload-title">
+                            <i class="bi bi-person me-3"></i>
+                            Welcome Back
+                        </h3>
+                        <p class="upload-subtitle">Sign in to your fashion account</p>
+                    </div>
+                    
+                    <div class="upload-card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <!-- Username Field -->
+                            <div class="form-group">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="form-text text-danger">
+                                        {% for error in form.username.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Password Field -->
+                            <div class="form-group">
+                                <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                                {{ form.password }}
+                                {% if form.password.errors %}
+                                    <div class="form-text text-danger">
+                                        {% for error in form.password.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Non-field errors (like invalid login) -->
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger" role="alert">
+                                    {% for error in form.non_field_errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Submit Button -->
+                            <div class="submit-wrapper">
+                                <button type="submit" class="btn-generate">
+                                    <span class="btn-content">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                                        Sign In
+                                    </span>
+                                </button>
+                            </div>
+                            
+                            <!-- Register Link -->
+                            <div class="text-center mt-3">
+                                <p class="mb-0" style="color: var(--text-secondary);">
+                                    Don't have an account? 
+                                    <a href="{% url 'register' %}" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;">
+                                        Create one here
+                                    </a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form field styling
+    const formInputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+    formInputs.forEach(input => {
+        input.classList.add('form-control');
+        input.style.marginBottom = '0';
+    });
+    
+    // Enhanced form animations
+    const uploadCard = document.querySelector('.upload-card');
+    if (uploadCard) {
+        uploadCard.classList.add('animate-on-scroll');
+        
+        // Intersection observer for animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        observer.observe(uploadCard);
+    }
+    
+    // Auto-focus on first input
+    const firstInput = document.querySelector('input[type="text"]');
+    if (firstInput) {
+        firstInput.focus();
+    }
+});
+</script>
+{% endblock %}

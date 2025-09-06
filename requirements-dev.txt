@@ -1,0 +1,30 @@
+# Include all production requirements
+-r requirements.txt
+
+# Development Tools
+pytest>=7.0.0
+pytest-django>=4.5.0
+pytest-cov>=4.0.0
+
+# Code Quality & Formatting
+black>=22.0.0
+flake8>=5.0.0
+isort>=5.10.0
+mypy>=1.0.0
+
+# Jupyter & Notebooks (for development/experimentation)
+jupyter>=1.0.0
+jupyterlab>=3.4.0
+notebook>=6.4.0
+
+# Development utilities
+ipdb>=0.13.0
+watchdog>=2.1.0
+
+# Documentation (if needed)
+sphinx>=5.0.0
+sphinx-rtd-theme>=1.0.0
+
+# Performance profiling & debugging
+memory-profiler>=0.60.0
+line-profiler>=4.0.0
