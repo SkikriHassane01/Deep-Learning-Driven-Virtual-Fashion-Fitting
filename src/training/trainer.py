@@ -10,9 +10,9 @@ from tqdm import tqdm
 import numpy as np
 from typing import Dict, Tuple, Optional
 
-from .losses import EdgeAwareLoss
-from .metrics import Metrics
-from ..utils.config import Config
+from training.losses import EdgeAwareLoss
+from training.metrics import Metrics
+from utils.config import Config
 
 
 class CheckpointManager:

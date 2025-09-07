@@ -8,7 +8,7 @@ ENV DJANGO_SETTINGS_MODULE=virtual_tryon.settings.production
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    libgl1-mesa-dev \
     libglib2.0-0 \
     libsm6 \
     libxext6 \

@@ -45,7 +45,7 @@ def main():
         
         try:
             # Generate garment
-            generated_image = generator.generate_garment(prompt)
+            generated_image = generator.generate_outfit(prompt)
             
             # Save result
             safe_prompt = "".join(c for c in prompt if c.isalnum() or c in (' ', '-', '_')).rstrip()

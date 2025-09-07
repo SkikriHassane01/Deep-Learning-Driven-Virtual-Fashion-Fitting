@@ -33,7 +33,7 @@ class Config:
     EDGE_WEIGHT: float = 0.4
     
     # Paths
-    MODEL_DIR: str = "model"
+    MODEL_DIR: str = "../model"
     OUTPUT_DIR: str = os.path.join(MODEL_DIR, "output")
     MODEL_PATH: str = os.path.join(MODEL_DIR, "best_model.pth")
     CONFIG_PATH: str = os.path.join(MODEL_DIR, "model_config.json")

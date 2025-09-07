@@ -9,8 +9,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from typing import Dict, Optional, Union
 
-from ..models.human_parser import HumanParsingNet
-from ..utils.config import Config
+from models.human_parser import HumanParsingNet
+from utils.config import Config
 
 
 class Predictor:
@@ -211,8 +211,8 @@ class Predictor:
         Returns:
             Visualization as PIL Image
         """
-        from ..utils.visualization import Visualizer
-        from ..utils.image_processing import ImageProcessor
+        from utils.visualization import Visualizer
+        from utils.image_processing import ImageProcessor
         
         # Get prediction
         prediction = self.predict(image)

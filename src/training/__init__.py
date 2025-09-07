@@ -1,8 +1,8 @@
 """Training infrastructure for model training."""
 
-from .trainer import Trainer
-from .losses import EdgeAwareLoss
-from .metrics import Metrics
+from training.trainer import Trainer
+from training.losses import EdgeAwareLoss
+from training.metrics import Metrics
 
 __all__ = [
     'Trainer',
